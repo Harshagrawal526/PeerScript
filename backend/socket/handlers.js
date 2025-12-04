@@ -16,20 +16,15 @@ const handleJoinRoom = (io, socket) => async (roomId) => {
 
   const activeRoom = activeRooms.get(roomId);
   
-  // AUTO-SET USERNAME FOR AUTHENTICATED USERS
   const username = socket.user ? socket.user.username : null;
   
   activeRoom.users.set(socket.id, { username });
   
-  // Add to usernames set if authenticated
   if (username) {
     activeRoom.usernames.add(username);
     console.log(`User ${socket.id} auto-set username to ${username} (authenticated)`);
     
-    // Notify user their username is set
     socket.emit('username-auto-set', { username });
-    
-    // Notify others
     socket.to(roomId).emit('user-joined-chat', { username });
   }
 
@@ -52,7 +47,6 @@ const handleSetUsername = (io, socket) => ({ roomId, username }) => {
   if (activeRooms.has(roomId)) {
     const room = activeRooms.get(roomId);
     
-    // Check if username is already taken
     if (room.usernames.has(username)) {
       socket.emit('username-taken');
       return;
@@ -61,7 +55,6 @@ const handleSetUsername = (io, socket) => ({ roomId, username }) => {
     const user = room.users.get(socket.id);
     
     if (user) {
-      // Remove old username if exists
       if (user.username) {
         room.usernames.delete(user.username);
       }
@@ -71,8 +64,6 @@ const handleSetUsername = (io, socket) => ({ roomId, username }) => {
       console.log(`User ${socket.id} set username to ${username} in room ${roomId}`);
       
       socket.emit('username-accepted');
-      
-      // Notify others that user joined chat
       socket.to(roomId).emit('user-joined-chat', { username });
     }
   }
@@ -91,7 +82,6 @@ const handleSendMessage = (io, socket) => ({ roomId, message }) => {
         socketId: socket.id
       };
       
-      // Send to all users including sender
       io.to(roomId).emit('chat-message', messageData);
       console.log(`Message from ${user.username} in room ${roomId}: ${message}`);
     }
@@ -102,11 +92,14 @@ const handleLeaveRoom = (io, socket) => (roomId) => {
   handleUserLeave(io, socket.id, roomId);
 };
 
+// 🔥 CRITICAL FIX: Don't broadcast back to sender
 const handleCodeChange = (io, socket) => async ({ roomId, language, code }) => {
   if (activeRooms.has(roomId)) {
     const activeRoom = activeRooms.get(roomId);
     activeRoom.code[language] = code;
 
+    // ✅ CHANGED: socket.to() instead of io.to()
+    // This sends to everyone EXCEPT the sender
     socket.to(roomId).emit('code-update', { language, code });
 
     try {
@@ -139,7 +132,6 @@ const handleUserLeave = (io, socketId, roomId) => {
     const room = activeRooms.get(roomId);
     const user = room.users.get(socketId);
     
-    // Remove username from set and notify if user had set username
     if (user && user.username) {
       room.usernames.delete(user.username);
       io.to(roomId).emit('user-left-chat', { username: user.username });
