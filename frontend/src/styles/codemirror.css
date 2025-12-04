@@ -1,0 +1,16 @@
+.CodeMirror {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.CodeMirror-scroll {
+  position: absolute;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+
+.CodeMirror pre {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

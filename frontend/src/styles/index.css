@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+
+/* Resizing class for smooth performance */
+.resizing * {
+  user-select: none !important;
+  pointer-events: none !important;
+}
+
+.resizing {
+  cursor: ns-resize !important;
+}
+
+/* Chat resizing class */
+.chat-resizing * {
+  user-select: none !important;
+  pointer-events: none !important;
+}
+
+.chat-resizing {
+  cursor: ew-resize !important;
+}
+
+/* Resize handle enhancement */
+.resize-handle {
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chat-resize-handle {
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
