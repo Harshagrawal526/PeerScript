@@ -22,7 +22,7 @@ const server = http.createServer(app);
 // UPDATED CORS CONFIGURATION
 const allowedOrigins = [
   'http://localhost:5173',
-  "https://peer-script.vercel.app/"// YOUR VERCEL URL
+  "https://peer-script.vercel.app"// YOUR VERCEL URL
 ];
 
 const io = new Server(server, {
