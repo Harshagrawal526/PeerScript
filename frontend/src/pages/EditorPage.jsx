@@ -32,7 +32,6 @@ function EditorPage() {
   const { socket, connected } = useSocket();
   
   // ADD THIS: Track if we're currently sending an update
-  const isSendingUpdate = useRef(false);
 
   const HEADER_HEIGHT = 53;
   const MIN_HEIGHT = 5;
@@ -168,10 +167,7 @@ function EditorPage() {
 
     // MODIFIED: Only update if we're not currently sending
     socket.on('code-update', ({ language, code }) => {
-      if (isSendingUpdate.current) {
-        // Ignore updates while we're sending
-        return;
-      }
+
 
       if (language === 'html') setHtml(code);
       else if (language === 'css') setCss(code);
@@ -198,33 +194,21 @@ function EditorPage() {
   // MODIFIED: HTML changes
   useEffect(() => {
     if (socket && roomId && codeLoaded) {
-      isSendingUpdate.current = true;
       socket.emit('code-change', { roomId, language: 'html', code: html });
-      setTimeout(() => {
-        isSendingUpdate.current = false;
-      }, 200); // Small delay to prevent immediate echo
     }
   }, [html, socket, roomId, codeLoaded]);
 
   // MODIFIED: CSS changes
   useEffect(() => {
     if (socket && roomId && codeLoaded) {
-      isSendingUpdate.current = true;
       socket.emit('code-change', { roomId, language: 'css', code: css });
-      setTimeout(() => {
-        isSendingUpdate.current = false;
-      }, 200);
     }
   }, [css, socket, roomId, codeLoaded]);
 
   // MODIFIED: JS changes
   useEffect(() => {
     if (socket && roomId && codeLoaded) {
-      isSendingUpdate.current = true;
       socket.emit('code-change', { roomId, language: 'js', code: js });
-      setTimeout(() => {
-        isSendingUpdate.current = false;
-      }, 200);
     }
   }, [js, socket, roomId, codeLoaded]);
 

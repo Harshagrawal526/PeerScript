@@ -20,13 +20,20 @@ export default function Editor(props) {
   const [localValue, setLocalValue] = useState(value)
   const timeoutRef = useRef(null)
   const menuRef = useRef(null)
-  const isRemoteChange = useRef(false) // ADD THIS - Track if change is from remote
+  const isLocalChange = useRef(false) // Track if change is from user typing
 
-  // Update local value when prop changes from external source
+  // Update local value when prop changes from external source (other users)
   useEffect(() => {
-    if (value !== localValue) {
-      isRemoteChange.current = true; // Mark as remote change
-      setLocalValue(value);
+    // Only update if it's different AND not from local typing
+    if (value !== localValue && !isLocalChange.current) {
+      setLocalValue(value)
+    }
+    // Reset the flag after a short delay
+    if (isLocalChange.current) {
+      const timer = setTimeout(() => {
+        isLocalChange.current = false
+      }, 100)
+      return () => clearTimeout(timer)
     }
   }, [value])
 
@@ -48,12 +55,8 @@ export default function Editor(props) {
   }, [menuOpen])
 
   function handleChange(editor, data, newValue) {
-    // If this is a remote change, don't propagate it back
-    if (isRemoteChange.current) {
-      isRemoteChange.current = false;
-      return;
-    }
-
+    // Mark this as a local change (user is typing)
+    isLocalChange.current = true
     setLocalValue(newValue)
     
     // Clear existing timeout
@@ -61,10 +64,10 @@ export default function Editor(props) {
       clearTimeout(timeoutRef.current)
     }
     
-    // Debounce the onChange call
+    // Debounce the onChange call to reduce network traffic
     timeoutRef.current = setTimeout(() => {
       onChange(newValue)
-    }, 150)
+    }, 300) // Increased from 150ms to 300ms for better performance
   }
 
   // Cleanup timeout on unmount
@@ -160,6 +163,7 @@ export default function Editor(props) {
         formattedCode = beautify.js(localValue, options);
       }
 
+      isLocalChange.current = true
       setLocalValue(formattedCode);
       onChange(formattedCode);
       setFormatted(true);
@@ -176,7 +180,6 @@ export default function Editor(props) {
         <span className="font-semibold">{displayName}</span>
         
         {open ? (
-          // Full buttons when expanded
           <div className="flex items-center gap-2">
             <button
               type="button"
