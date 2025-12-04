@@ -22,7 +22,7 @@ const server = http.createServer(app);
 // UPDATED CORS CONFIGURATION
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://codecanvas-eight.vercel.app' // YOUR VERCEL URL
+  process.env.FRONTEND_URL// YOUR VERCEL URL
 ];
 
 const io = new Server(server, {
