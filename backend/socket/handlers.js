@@ -72,7 +72,25 @@ const schedulePersist = (roomId) => {
   }, SAVE_DEBOUNCE_MS);
 };
 
-const handleJoinRoom = (io, socket) => (roomId) => {
+// Private rooms are only accessible to their creator; rooms not in the DB
+// (anonymous quick-rooms) are treated as public. Fails closed on DB errors.
+const canAccessRoom = async (roomId, socket) => {
+  try {
+    const dbRoom = await Room.findOne({ roomId }).select('isPublic creator');
+    if (!dbRoom || dbRoom.isPublic) return true;
+    return !!(socket.user && dbRoom.creator && dbRoom.creator.toString() === socket.user.id);
+  } catch (error) {
+    console.error('Error checking room access:', error);
+    return false;
+  }
+};
+
+const handleJoinRoom = (io, socket) => async (roomId) => {
+  if (!(await canAccessRoom(roomId, socket))) {
+    socket.emit('room-access-denied');
+    return;
+  }
+
   socket.join(roomId);
 
   const activeRoom = ensureRoom(roomId);
@@ -92,8 +110,13 @@ const handleJoinRoom = (io, socket) => (roomId) => {
 };
 
 // Client asks for the current doc state; reply with a full Yjs update.
-// Joins the socket.io room first so no update is missed between sync and join.
+// Joins the socket.io room before encoding so no update is missed in between.
 const handleYjsRequestSync = (io, socket) => async (roomId) => {
+  if (!(await canAccessRoom(roomId, socket))) {
+    socket.emit('room-access-denied');
+    return;
+  }
+
   socket.join(roomId);
   const room = ensureRoom(roomId);
   await room.initPromise;
@@ -101,6 +124,9 @@ const handleYjsRequestSync = (io, socket) => async (roomId) => {
 };
 
 const handleYjsUpdate = (io, socket) => async ({ roomId, update }) => {
+  // Only sockets that passed the join gate may write
+  if (!socket.rooms.has(roomId)) return;
+
   const room = activeRooms.get(roomId);
   if (!room || !update) return;
 
@@ -120,7 +146,7 @@ const handleYjsUpdate = (io, socket) => async ({ roomId, update }) => {
 
 // Cursor/selection presence: pure relay, clients own the awareness protocol
 const handleYjsAwareness = (io, socket) => ({ roomId, update }) => {
-  if (!update) return;
+  if (!update || !socket.rooms.has(roomId)) return;
   socket.to(roomId).emit('yjs-awareness', update);
 };
 

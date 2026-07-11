@@ -20,6 +20,7 @@ function EditorPage() {
   const [js, setJs] = useState('');
   const [srcDoc, setSrcDoc] = useState('');
   const [usersCount, setUsersCount] = useState(1);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatWidth, setChatWidth] = useState(320);
   const [editorHeight, setEditorHeight] = useState(50);
@@ -174,6 +175,22 @@ function EditorPage() {
     };
   }, [socket]);
 
+  // Private-room gate: the server refuses join/sync for non-creators.
+  // A successful sync clears the flag (e.g. after logging in as the creator).
+  useEffect(() => {
+    if (!socket) return;
+
+    const onDenied = () => setAccessDenied(true);
+    const onSynced = () => setAccessDenied(false);
+    socket.on('room-access-denied', onDenied);
+    socket.on('yjs-sync', onSynced);
+
+    return () => {
+      socket.off('room-access-denied', onDenied);
+      socket.off('yjs-sync', onSynced);
+    };
+  }, [socket]);
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setSrcDoc(`
@@ -187,6 +204,25 @@ function EditorPage() {
 
     return () => clearTimeout(timeout);
   }, [html, css, js]);
+
+  if (accessDenied) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
+        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">This room is private</h2>
+          <p className="text-gray-600 mb-4">Only the room's creator can open it. If this is your room, log in first.</p>
+          <div className="flex gap-3 justify-center">
+            <Link to="/login" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+              Log In
+            </Link>
+            <Link to="/" className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300">
+              Go to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!roomId) {
     return (
