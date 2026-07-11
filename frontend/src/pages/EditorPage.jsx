@@ -5,9 +5,8 @@ import Editor from '../components/editor/Editor';
 import RoomHeader from '../components/room/RoomHeader';
 import Chat from '../components/room/Chat';
 import { useSocket } from '../context/SocketContext';
-import img from '../assets/img.svg';
 import { useAuth } from '../context/AuthContext';
-import { API_URL } from '../config';
+import { api } from '../utils/api';
 
 function EditorPage() {
   const { token } = useAuth();
@@ -30,8 +29,6 @@ function EditorPage() {
   const containerRef = useRef(null);
   const frameRef = useRef(null);
   const { socket, connected } = useSocket();
-  
-  // ADD THIS: Track if we're currently sending an update
 
   const HEADER_HEIGHT = 53;
   const MIN_HEIGHT = 5;
@@ -42,17 +39,8 @@ function EditorPage() {
       if (!roomId) return;
 
       try {
-        const headers = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const response = await fetch(`${API_URL}/api/rooms/${roomId}`, {
-          headers
-        });
-
-        if (response.ok) {
-          const data = await response.json();
+        const { ok, data } = await api.get(`/api/rooms/${roomId}`, token);
+        if (ok) {
           setRoomName(data.room.name);
         }
       } catch (error) {
@@ -63,11 +51,21 @@ function EditorPage() {
     fetchRoomDetails();
   }, [roomId, token]);
 
+  const setters = { html: setHtml, css: setCss, js: setJs };
+
+  // Called only for local edits, so remote updates are never re-broadcast
+  const updateCode = (language, code) => {
+    setters[language](code);
+    if (socket && roomId && codeLoaded) {
+      socket.emit('code-change', { roomId, language, code });
+    }
+  };
+
   const clearCode = () => {
     if (window.confirm('Are you sure you want to clear all code? This will affect all users in the room.')) {
-      setHtml('');
-      setCss('');
-      setJs('');
+      updateCode('html', '');
+      updateCode('css', '');
+      updateCode('js', '');
     }
   };
 
@@ -165,10 +163,7 @@ function EditorPage() {
   useEffect(() => {
     if (!socket) return;
 
-    // MODIFIED: Only update if we're not currently sending
     socket.on('code-update', ({ language, code }) => {
-
-
       if (language === 'html') setHtml(code);
       else if (language === 'css') setCss(code);
       else if (language === 'js') setJs(code);
@@ -190,27 +185,6 @@ function EditorPage() {
       socket.off('users-in-room');
     };
   }, [socket]);
-
-  // MODIFIED: HTML changes
-  useEffect(() => {
-    if (socket && roomId && codeLoaded) {
-      socket.emit('code-change', { roomId, language: 'html', code: html });
-    }
-  }, [html, socket, roomId, codeLoaded]);
-
-  // MODIFIED: CSS changes
-  useEffect(() => {
-    if (socket && roomId && codeLoaded) {
-      socket.emit('code-change', { roomId, language: 'css', code: css });
-    }
-  }, [css, socket, roomId, codeLoaded]);
-
-  // MODIFIED: JS changes
-  useEffect(() => {
-    if (socket && roomId && codeLoaded) {
-      socket.emit('code-change', { roomId, language: 'js', code: js });
-    }
-  }, [js, socket, roomId, codeLoaded]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -245,7 +219,6 @@ function EditorPage() {
   return (
     <div className="h-screen flex flex-col bg-blue-50">
       <RoomHeader
-        roomId={roomId}
         roomName={roomName}
         usersCount={usersCount}
         connected={connected}
@@ -268,9 +241,9 @@ function EditorPage() {
           className="flex bg-blue-100/50 border-b-2 border-blue-200 overflow-hidden"
           style={{ height: `${editorHeight}%` }}
         >
-          <Editor language="xml" displayName="HTML" value={html} onChange={setHtml} />
-          <Editor language="css" displayName="CSS" value={css} onChange={setCss} />
-          <Editor language="javascript" displayName="JS" value={js} onChange={setJs} />
+          <Editor language="xml" displayName="HTML" value={html} onChange={(code) => updateCode('html', code)} />
+          <Editor language="css" displayName="CSS" value={css} onChange={(code) => updateCode('css', code)} />
+          <Editor language="javascript" displayName="JS" value={js} onChange={(code) => updateCode('js', code)} />
         </div>
 
         <div

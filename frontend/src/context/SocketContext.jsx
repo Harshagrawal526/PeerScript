@@ -4,6 +4,7 @@ import { useAuth } from './AuthContext';
 import { SOCKET_URL } from '../config';
 const SocketContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook lives with its provider; only costs HMR granularity
 export const useSocket = () => {
   return useContext(SocketContext);
 };
@@ -17,11 +18,11 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     // Pass token in socket handshake
     const newSocket = io(SOCKET_URL, {
-  auth: {
-    token: token || null
-  }
-});
-    
+      auth: {
+        token: token || null
+      }
+    });
+
     newSocket.on('connect', () => {
       console.log('✅ Connected to server:', newSocket.id);
       setConnected(true);
@@ -38,10 +39,11 @@ export const SocketProvider = ({ children }) => {
       setConnecting(false);
     });
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- socket must live in state so consumers re-render when it is (re)created
     setSocket(newSocket);
 
     return () => newSocket.close();
-  }, [token]); // RECONNECT WHEN TOKEN CHANGES
+  }, [token]); // Reconnect when the auth token changes
 
   return (
     <SocketContext.Provider value={{ socket, connected, connecting }}>

@@ -3,10 +3,9 @@ import { useAuth } from '../../context/AuthContext';
 import { copyToClipboard } from '../../utils/roomUtils';
 import { exportAsHTML } from '../../utils/exportUtils';
 
-const RoomHeader = ({ 
-  roomId, 
-  roomName, // NEW
-  usersCount, 
+const RoomHeader = ({
+  roomName,
+  usersCount,
   connected, 
   onLeaveRoom, 
   onClearCode,

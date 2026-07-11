@@ -14,7 +14,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
   const chatRef = useRef(null);
   const frameRef = useRef(null);
   
-  const { user, isAuthenticated } = useAuth(); // GET AUTH STATE
+  const { isAuthenticated } = useAuth();
 
   const MIN_WIDTH_PERCENT = 0.10;
   const MAX_WIDTH_PERCENT = 0.35;

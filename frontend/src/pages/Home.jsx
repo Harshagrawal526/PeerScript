@@ -9,7 +9,7 @@ import htmlImg from '../assets/html.png';
 import cssImg from '../assets/css.png';
 import jsImg from '../assets/js.png';
 import Modal from '../components/ui/Modal';
-import { API_URL } from '../config';
+import { api } from '../utils/api';
 
 function Home() {
   const navigate = useNavigate();
@@ -35,19 +35,9 @@ function Home() {
     setCreatingQuick(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/rooms`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: quickRoomName || ''
-        })
-      });
+      const { ok, data } = await api.post('/api/rooms', { name: quickRoomName || '' }, token);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (ok) {
         navigate(`/app?room=${data.room.roomId}`);
       }
     } catch (error) {

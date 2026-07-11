@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { API_URL } from '../config';
+import { api } from '../utils/api';
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook lives with its provider; only costs HMR granularity
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -23,14 +24,9 @@ export const AuthProvider = ({ children }) => {
       
       if (storedToken) {
         try {
-          const response = await fetch(`${API_URL}/api/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${storedToken}`
-            }
-          });
+          const { ok, data } = await api.get('/api/auth/me', storedToken);
 
-          if (response.ok) {
-            const data = await response.json();
+          if (ok) {
             setUser(data.user);
             setToken(storedToken);
           } else {
@@ -56,25 +52,17 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, email, password })
-      });
+      const { ok, data } = await api.post('/api/auth/register', { username, email, password });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (ok) {
         setUser(data.user);
         setToken(data.token);
         sessionStorage.setItem('token', data.token);
         return { success: true };
       } else {
-        return { 
-          success: false, 
-          message: data.message || 'Registration failed' 
+        return {
+          success: false,
+          message: data?.message || 'Registration failed'
         };
       }
     } catch (error) {
@@ -85,25 +73,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
+      const { ok, data } = await api.post('/api/auth/login', { email, password });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (ok) {
         setUser(data.user);
         setToken(data.token);
         sessionStorage.setItem('token', data.token);
         return { success: true };
       } else {
-        return { 
-          success: false, 
-          message: data.message || 'Login failed' 
+        return {
+          success: false,
+          message: data?.message || 'Login failed'
         };
       }
     } catch (error) {

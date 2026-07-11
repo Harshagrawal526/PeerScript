@@ -7,7 +7,7 @@ const formatHTML = (html) => {
   html.split(/>\s*</).forEach((node) => {
     if (node.match(/^\/\w/)) indent--; // closing tag
     formatted += tab.repeat(indent) + '<' + node + '>\n';
-    if (node.match(/^<?\w[^>]*[^\/]$/)) indent++; // opening tag
+    if (node.match(/^<?\w[^>]*[^/]$/)) indent++; // opening tag
   });
 
   return formatted.substring(1, formatted.length - 2);

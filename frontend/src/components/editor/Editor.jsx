@@ -22,19 +22,19 @@ export default function Editor(props) {
   const menuRef = useRef(null)
   const isLocalChange = useRef(false) // Track if change is from user typing
 
-  // Update local value when prop changes from external source (other users)
   useEffect(() => {
-    // Only update if it's different AND not from local typing
-    if (value !== localValue && !isLocalChange.current) {
-      setLocalValue(value)
-    }
-    // Reset the flag after a short delay
     if (isLocalChange.current) {
+      // User is mid-typing: localValue is intentionally ahead of the prop.
+      // Release the flag shortly after the debounced prop catches up.
       const timer = setTimeout(() => {
         isLocalChange.current = false
       }, 100)
       return () => clearTimeout(timer)
     }
+
+    // Adopt external value changes (other users' edits)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing remote edits into the controlled editor
+    setLocalValue(value)
   }, [value])
 
   // Close menu when clicking outside

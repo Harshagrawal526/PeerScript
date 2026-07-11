@@ -13,7 +13,7 @@ export const extractRoomIdFromInput = (input) => {
       return params.get('room') || input;
     }
     return input;
-  } catch (error) {
+  } catch {
     return input;
   }
 };

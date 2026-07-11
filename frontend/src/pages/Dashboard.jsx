@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Modal from '../components/ui/Modal';
-import { API_URL } from '../config';
+import { api } from '../utils/api';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -32,14 +32,9 @@ const [renaming, setRenaming] = useState(false);
       if (!token) return;
 
       try {
-        const response = await fetch(`${API_URL}/api/rooms/my-rooms`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const { ok, data } = await api.get('/api/rooms/my-rooms', token);
 
-        if (response.ok) {
-          const data = await response.json();
+        if (ok) {
           setRooms(data.rooms);
         }
       } catch (error) {
@@ -57,19 +52,9 @@ const [renaming, setRenaming] = useState(false);
     setCreating(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/rooms`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: newRoomName || 'Untitled Project'
-        })
-      });
+      const { ok, data } = await api.post('/api/rooms', { name: newRoomName || 'Untitled Project' }, token);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (ok) {
         navigate(`/app?room=${data.room.roomId}`);
       }
     } catch (error) {
@@ -86,14 +71,9 @@ const [renaming, setRenaming] = useState(false);
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/rooms/${roomId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const { ok } = await api.delete(`/api/rooms/${roomId}`, token);
 
-      if (response.ok) {
+      if (ok) {
         setRooms(rooms.filter(room => room.roomId !== roomId));
       } else {
         alert('Failed to delete room');
@@ -111,19 +91,11 @@ const [renaming, setRenaming] = useState(false);
   setRenaming(true);
 
   try {
-    const response = await fetch(`${API_URL}/api/rooms/${renamingRoom.roomId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ name: newRoomName.trim() })
-    });
+    const { ok, data } = await api.put(`/api/rooms/${renamingRoom.roomId}`, { name: newRoomName.trim() }, token);
 
-    if (response.ok) {
-      const data = await response.json();
+    if (ok) {
       // Update rooms list
-      setRooms(rooms.map(room => 
+      setRooms(rooms.map(room =>
         room.roomId === renamingRoom.roomId 
           ? { ...room, name: data.room.name }
           : room

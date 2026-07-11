@@ -92,14 +92,19 @@ const handleLeaveRoom = (io, socket) => (roomId) => {
   handleUserLeave(io, socket.id, roomId);
 };
 
-// 🔥 CRITICAL FIX: Don't broadcast back to sender
+const EDITABLE_LANGUAGES = ['html', 'css', 'js'];
+
 const handleCodeChange = (io, socket) => async ({ roomId, language, code }) => {
+  // Reject arbitrary keys so clients can't write outside the three code fields
+  if (!EDITABLE_LANGUAGES.includes(language) || typeof code !== 'string') {
+    return;
+  }
+
   if (activeRooms.has(roomId)) {
     const activeRoom = activeRooms.get(roomId);
     activeRoom.code[language] = code;
 
-    // ✅ CHANGED: socket.to() instead of io.to()
-    // This sends to everyone EXCEPT the sender
+    // socket.to() excludes the sender, so authors don't receive their own edits back
     socket.to(roomId).emit('code-update', { language, code });
 
     try {
