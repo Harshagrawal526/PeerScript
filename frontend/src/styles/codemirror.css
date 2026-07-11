@@ -1,16 +1,25 @@
-.CodeMirror {
-  height: 100% !important;
-  width: 100% !important;
+/* CodeMirror 6 fills its editor pane */
+.editor-container {
+  position: relative;
 }
 
-.CodeMirror-scroll {
+.editor-container .cm-editor {
   position: absolute;
-  overflow: hidden !important;
-  width: 100% !important;
+  inset: 0;
+  height: 100%;
+  width: 100%;
 }
 
-.CodeMirror pre {
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  word-break: break-all;
+.cm-editor .cm-scroller {
+  overflow: auto;
+}
+
+/* Remote cursors (y-codemirror.next) */
+.cm-ySelectionInfo {
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: 600;
+  opacity: 1 !important;
 }

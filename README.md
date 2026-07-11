@@ -13,12 +13,13 @@ peerscript/
 ```
 
 ## Tech Stack
-- **Frontend**: React 19, Vite, Tailwind CSS, Socket.io Client, CodeMirror
-- **Backend**: Node.js, Express 5, Socket.io, MongoDB, JWT
+- **Frontend**: React 19, Vite, Tailwind CSS, CodeMirror 6, Yjs, Socket.io Client
+- **Backend**: Node.js, Express 5, Socket.io, Yjs, MongoDB, JWT
 - **Deployment**: Vercel (Frontend), Render (Backend), MongoDB Atlas
 
 ## Features
-- Real-time collaborative editing (Socket.io)
+- Conflict-free real-time collaborative editing (Yjs CRDT over Socket.io)
+- Live cursors and selections of other users in the editor
 - Live HTML/CSS/JS preview
 - Built-in chat with persistent usernames
 - User authentication (JWT)
@@ -26,7 +27,7 @@ peerscript/
 - Code formatting & export
 
 ## How It Works
-Each project lives in a room identified by a unique room ID. Clients join the room over a Socket.io connection (authenticated via JWT when logged in), and every edit is broadcast to the other members of that room per file (HTML/CSS/JS) while being persisted to MongoDB, so the latest code is restored when someone joins later. The live preview is rendered client-side in a sandboxed iframe.
+Each project lives in a room identified by a unique room ID. The three files (HTML/CSS/JS) are shared Yjs CRDT documents, so concurrent edits from multiple users merge without conflicts instead of overwriting each other. Sync runs over the room's Socket.io connection (authenticated via JWT when logged in): the server holds an authoritative copy of each active room's document, relays updates and cursor presence between members, and persists the code to MongoDB so it is restored when someone joins later. The live preview is rendered client-side in a sandboxed iframe.
 
 ## Quick Start
 
@@ -72,8 +73,8 @@ Visit `http://localhost:5173`
 | `VITE_SOCKET_URL` | Socket.io server URL (default: `http://localhost:3001`) |
 
 ## Known Limitations
-- Concurrent edits use last-write-wins per file rather than OT/CRDT-based merging, so simultaneous typing in the same file can drop keystrokes.
-- Active room state is held in server memory, so scaling beyond a single server instance would require a shared adapter (e.g. Redis).
+- Active room state (including the authoritative Yjs documents) is held in server memory, so scaling beyond a single server instance would require a shared adapter (e.g. Redis).
+- Documents are persisted as plain text, so edit history is not retained across room restarts.
 
 ## Author
 **Harsh Agrawal** — [GitHub](https://github.com/Harshagrawal526)

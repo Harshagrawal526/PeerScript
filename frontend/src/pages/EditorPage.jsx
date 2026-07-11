@@ -6,10 +6,11 @@ import RoomHeader from '../components/room/RoomHeader';
 import Chat from '../components/room/Chat';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
+import { useCollab } from '../hooks/useCollab';
 import { api } from '../utils/api';
 
 function EditorPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomId = searchParams.get('room');
@@ -19,7 +20,6 @@ function EditorPage() {
   const [js, setJs] = useState('');
   const [srcDoc, setSrcDoc] = useState('');
   const [usersCount, setUsersCount] = useState(1);
-  const [codeLoaded, setCodeLoaded] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatWidth, setChatWidth] = useState(320);
   const [editorHeight, setEditorHeight] = useState(50);
@@ -29,6 +29,9 @@ function EditorPage() {
   const containerRef = useRef(null);
   const frameRef = useRef(null);
   const { socket, connected } = useSocket();
+
+  // Shared Yjs document + cursor presence for this room
+  const collab = useCollab(socket, roomId, user?.username || 'Anonymous');
 
   const HEADER_HEIGHT = 53;
   const MIN_HEIGHT = 5;
@@ -51,21 +54,14 @@ function EditorPage() {
     fetchRoomDetails();
   }, [roomId, token]);
 
-  const setters = { html: setHtml, css: setCss, js: setJs };
-
-  // Called only for local edits, so remote updates are never re-broadcast
-  const updateCode = (language, code) => {
-    setters[language](code);
-    if (socket && roomId && codeLoaded) {
-      socket.emit('code-change', { roomId, language, code });
-    }
-  };
-
   const clearCode = () => {
+    if (!collab) return;
     if (window.confirm('Are you sure you want to clear all code? This will affect all users in the room.')) {
-      updateCode('html', '');
-      updateCode('css', '');
-      updateCode('js', '');
+      collab.ydoc.transact(() => {
+        Object.values(collab.ytexts).forEach((ytext) => {
+          ytext.delete(0, ytext.length);
+        });
+      });
     }
   };
 
@@ -143,34 +139,28 @@ function EditorPage() {
     };
   }, [socket, roomId]);
 
+  // Mirror the shared Y.Texts into React state for the live preview and export
   useEffect(() => {
-    if (!socket) return;
+    if (!collab) return;
 
-    socket.on('load-code', (code) => {
-      setHtml(code.html);
-      setCss(code.css);
-      setJs(code.js);
-      setCodeLoaded(true);
-    });
+    const { ytexts } = collab;
+    const sync = () => {
+      setHtml(ytexts.html.toString());
+      setCss(ytexts.css.toString());
+      setJs(ytexts.js.toString());
+    };
+
+    sync();
+    ytexts.html.observe(sync);
+    ytexts.css.observe(sync);
+    ytexts.js.observe(sync);
 
     return () => {
-      socket.off('load-code');
+      ytexts.html.unobserve(sync);
+      ytexts.css.unobserve(sync);
+      ytexts.js.unobserve(sync);
     };
-  }, [socket]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on('code-update', ({ language, code }) => {
-      if (language === 'html') setHtml(code);
-      else if (language === 'css') setCss(code);
-      else if (language === 'js') setJs(code);
-    });
-
-    return () => {
-      socket.off('code-update');
-    };
-  }, [socket]);
+  }, [collab]);
 
   useEffect(() => {
     if (!socket) return;
@@ -239,9 +229,9 @@ function EditorPage() {
           className="flex bg-blue-100/50 border-b-2 border-blue-200 overflow-hidden"
           style={{ height: `${editorHeight}%` }}
         >
-          <Editor language="xml" displayName="HTML" value={html} onChange={(code) => updateCode('html', code)} />
-          <Editor language="css" displayName="CSS" value={css} onChange={(code) => updateCode('css', code)} />
-          <Editor language="javascript" displayName="JS" value={js} onChange={(code) => updateCode('js', code)} />
+          <Editor language="html" displayName="HTML" ytext={collab?.ytexts.html} awareness={collab?.awareness} />
+          <Editor language="css" displayName="CSS" ytext={collab?.ytexts.css} awareness={collab?.awareness} />
+          <Editor language="js" displayName="JS" ytext={collab?.ytexts.js} awareness={collab?.awareness} />
         </div>
 
         <div

@@ -1,41 +1,82 @@
 import React, { useState, useRef, useEffect } from 'react'
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/theme/material.css'
-import 'codemirror/mode/xml/xml'
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/mode/css/css'
-import { Controlled as ControlledEditor } from 'react-codemirror2'
+import * as Y from 'yjs'
+import { EditorState } from '@codemirror/state'
+import {
+  EditorView,
+  keymap,
+  lineNumbers,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  drawSelection
+} from '@codemirror/view'
+import { defaultKeymap, indentWithTab } from '@codemirror/commands'
+import { indentOnInput, bracketMatching } from '@codemirror/language'
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
+import { html } from '@codemirror/lang-html'
+import { css } from '@codemirror/lang-css'
+import { javascript } from '@codemirror/lang-javascript'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCompressAlt, faExpandAlt, faCopy, faDownload, faMagic, faBars } from '@fortawesome/free-solid-svg-icons'
 import beautify from 'js-beautify'
 
+const LANGUAGE_EXTENSIONS = {
+  html: html(),
+  css: css(),
+  js: javascript()
+}
 
 export default function Editor(props) {
-  const { language, displayName, value, onChange } = props
+  const { language, displayName, ytext, awareness } = props
   const [open, setOpen] = useState(true)
   const [copied, setCopied] = useState(false)
   const [downloaded, setDownloaded] = useState(false)
   const [formatted, setFormatted] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [localValue, setLocalValue] = useState(value)
-  const timeoutRef = useRef(null)
+  const containerRef = useRef(null)
+  const viewRef = useRef(null)
   const menuRef = useRef(null)
-  const isLocalChange = useRef(false) // Track if change is from user typing
 
+  // Mount a CodeMirror 6 view bound to the shared Y.Text; yCollab keeps the
+  // view and the CRDT in sync in both directions, including remote cursors.
   useEffect(() => {
-    if (isLocalChange.current) {
-      // User is mid-typing: localValue is intentionally ahead of the prop.
-      // Release the flag shortly after the debounced prop catches up.
-      const timer = setTimeout(() => {
-        isLocalChange.current = false
-      }, 100)
-      return () => clearTimeout(timer)
-    }
+    if (!ytext || !awareness || !containerRef.current) return
 
-    // Adopt external value changes (other users' edits)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing remote edits into the controlled editor
-    setLocalValue(value)
-  }, [value])
+    // Scope undo/redo to this user's own edits, not remote ones
+    const undoManager = new Y.UndoManager(ytext)
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: ytext.toString(),
+        extensions: [
+          lineNumbers(),
+          highlightActiveLineGutter(),
+          highlightSpecialChars(),
+          drawSelection(),
+          indentOnInput(),
+          bracketMatching(),
+          closeBrackets(),
+          highlightActiveLine(),
+          EditorView.lineWrapping,
+          oneDark,
+          LANGUAGE_EXTENSIONS[language],
+          keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...yUndoManagerKeymap, indentWithTab]),
+          yCollab(ytext, awareness, { undoManager })
+        ]
+      }),
+      parent: containerRef.current
+    })
+
+    viewRef.current = view
+
+    return () => {
+      undoManager.destroy()
+      view.destroy()
+      viewRef.current = null
+    }
+  }, [ytext, awareness, language])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -54,34 +95,11 @@ export default function Editor(props) {
     }
   }, [menuOpen])
 
-  function handleChange(editor, data, newValue) {
-    // Mark this as a local change (user is typing)
-    isLocalChange.current = true
-    setLocalValue(newValue)
-    
-    // Clear existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-    
-    // Debounce the onChange call to reduce network traffic
-    timeoutRef.current = setTimeout(() => {
-      onChange(newValue)
-    }, 300) // Increased from 150ms to 300ms for better performance
-  }
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [])
+  const getValue = () => (ytext ? ytext.toString() : '')
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(localValue)
+      await navigator.clipboard.writeText(getValue())
       setCopied(true)
       setMenuOpen(false)
       setTimeout(() => setCopied(false), 2000)
@@ -91,94 +109,89 @@ export default function Editor(props) {
   }
 
   const handleDownload = () => {
-    if (!localValue.trim()) {
-      alert(`Cannot download empty ${displayName} file`);
-      return;
+    const value = getValue()
+    if (!value.trim()) {
+      alert(`Cannot download empty ${displayName} file`)
+      return
     }
 
     const fileExtensions = {
       'HTML': 'html',
       'CSS': 'css',
       'JS': 'js'
-    };
+    }
 
     const mimeTypes = {
       'HTML': 'text/html',
       'CSS': 'text/css',
       'JS': 'text/javascript'
-    };
+    }
 
-    const extension = fileExtensions[displayName];
-    const mimeType = mimeTypes[displayName];
-    const filename = `code.${extension}`;
+    const extension = fileExtensions[displayName]
+    const mimeType = mimeTypes[displayName]
+    const filename = `code.${extension}`
 
-    const blob = new Blob([localValue], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const blob = new Blob([value], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
 
-    setDownloaded(true);
-    setMenuOpen(false);
-    setTimeout(() => setDownloaded(false), 2000);
+    setDownloaded(true)
+    setMenuOpen(false)
+    setTimeout(() => setDownloaded(false), 2000)
   }
 
   const handleFormat = () => {
-    if (!localValue.trim()) {
-      alert(`Cannot format empty ${displayName} code`);
-      return;
+    const value = getValue()
+    if (!value.trim()) {
+      alert(`Cannot format empty ${displayName} code`)
+      return
     }
 
     try {
-      let formattedCode;
+      let formattedCode
       const options = {
         indent_size: 2,
         indent_char: ' ',
         max_preserve_newlines: 2,
         preserve_newlines: true,
-        keep_array_indentation: false,
-        break_chained_methods: false,
-        indent_scripts: 'normal',
-        brace_style: 'collapse',
-        space_before_conditional: true,
-        unescape_strings: false,
-        jslint_happy: false,
-        end_with_newline: false,
-        wrap_line_length: 0,
         indent_inner_html: true,
-        comma_first: false,
-        e4x: false,
-        indent_empty_lines: false
-      };
-
-      if (displayName === 'HTML') {
-        formattedCode = beautify.html(localValue, options);
-      } else if (displayName === 'CSS') {
-        formattedCode = beautify.css(localValue, options);
-      } else if (displayName === 'JS') {
-        formattedCode = beautify.js(localValue, options);
+        end_with_newline: false,
+        wrap_line_length: 0
       }
 
-      isLocalChange.current = true
-      setLocalValue(formattedCode);
-      onChange(formattedCode);
-      setFormatted(true);
-      setMenuOpen(false);
-      setTimeout(() => setFormatted(false), 2000);
+      if (displayName === 'HTML') {
+        formattedCode = beautify.html(value, options)
+      } else if (displayName === 'CSS') {
+        formattedCode = beautify.css(value, options)
+      } else if (displayName === 'JS') {
+        formattedCode = beautify.js(value, options)
+      }
+
+      // Replace the shared text in one transaction so it syncs as a single edit
+      ytext.doc.transact(() => {
+        ytext.delete(0, ytext.length)
+        ytext.insert(0, formattedCode)
+      })
+
+      setFormatted(true)
+      setMenuOpen(false)
+      setTimeout(() => setFormatted(false), 2000)
     } catch (error) {
-      alert(`Error formatting ${displayName}: ${error.message}`);
+      alert(`Error formatting ${displayName}: ${error.message}`)
     }
   }
-  
+
   return (
     <div className={`grow basis-0 flex flex-col bg-blue-50/30 p-2 min-w-60 ${open ? '' : 'grow-0'}`}>
       <div className="flex justify-between items-center bg-gradient-to-r from-blue-600 to-purple-600 text-white pl-4 pr-2 py-2 rounded-t-lg shadow-md">
         <span className="font-semibold">{displayName}</span>
-        
+
         {open ? (
           <div className="flex items-center gap-2">
             <button
@@ -232,7 +245,7 @@ export default function Editor(props) {
               >
                 <FontAwesomeIcon icon={faBars} />
               </button>
-              
+
               {menuOpen && (
                 <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded-lg shadow-xl border border-gray-200 py-2 z-50 min-w-[150px]">
                   <button
@@ -270,18 +283,9 @@ export default function Editor(props) {
           </div>
         )}
       </div>
-      <ControlledEditor
-        onBeforeChange={handleChange}
-        value={localValue}
-        className="grow overflow-hidden rounded-br-lg rounded-bl-lg"
-        options={{
-          lineWrapping: true,
-          lint: true,
-          mode: language,
-          theme: 'material',
-          lineNumbers: true,
-          viewportMargin: Infinity
-        }}
+      <div
+        ref={containerRef}
+        className="editor-container grow overflow-hidden rounded-br-lg rounded-bl-lg"
       />
     </div>
   )

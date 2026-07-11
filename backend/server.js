@@ -12,10 +12,12 @@ const socketAuthMiddleware = require('./middleware/socketAuth');
 const {
   handleJoinRoom,
   handleLeaveRoom,
-  handleCodeChange,
   handleDisconnect,
   handleSetUsername,
-  handleSendMessage
+  handleSendMessage,
+  handleYjsRequestSync,
+  handleYjsUpdate,
+  handleYjsAwareness
 } = require('./socket/handlers');
 
 const app = express();
@@ -84,7 +86,9 @@ io.use(socketAuthMiddleware);
 io.on('connection', (socket) => {
   socket.on('join-room', handleJoinRoom(io, socket));
   socket.on('leave-room', handleLeaveRoom(io, socket));
-  socket.on('code-change', handleCodeChange(io, socket));
+  socket.on('yjs-request-sync', handleYjsRequestSync(io, socket));
+  socket.on('yjs-update', handleYjsUpdate(io, socket));
+  socket.on('yjs-awareness', handleYjsAwareness(io, socket));
   socket.on('set-username', handleSetUsername(io, socket));
   socket.on('send-message', handleSendMessage(io, socket));
   socket.on('disconnect', handleDisconnect(io, socket));
