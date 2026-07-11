@@ -79,6 +79,8 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/rooms', require('./routes/rooms'));
 
+app.use(require('./middleware/errorHandler'));
+
 // Socket authentication middleware
 io.use(socketAuthMiddleware);
 

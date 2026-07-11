@@ -13,36 +13,28 @@ const generateToken = (id) => {
 exports.register = async (req, res) => {
   const { username, email, password } = req.body;
 
-  try {
-    let user = await User.findOne({ $or: [{ email }, { username }] });
+  let user = await User.findOne({ $or: [{ email }, { username }] });
 
-    if (user) {
-      return res.status(400).json({
-        success: false,
-        message: user.email === email ? 'Email already registered' : 'Username already taken'
-      });
-    }
-
-    user = await User.create({ username, email, password });
-
-    const token = generateToken(user._id);
-
-    res.status(201).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({
+  if (user) {
+    return res.status(400).json({
       success: false,
-      message: 'Server error during registration'
+      message: user.email === email ? 'Email already registered' : 'Username already taken'
     });
   }
+
+  user = await User.create({ username, email, password });
+
+  const token = generateToken(user._id);
+
+  res.status(201).json({
+    success: true,
+    token,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email
+    }
+  });
 };
 
 // @route   POST /api/auth/login
@@ -51,65 +43,49 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password');
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
-    }
-
-    const isMatch = await user.comparePassword(password);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
-    }
-
-    const token = generateToken(user._id);
-
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({
+  if (!user) {
+    return res.status(401).json({
       success: false,
-      message: 'Server error during login'
+      message: 'Invalid credentials'
     });
   }
+
+  const isMatch = await user.comparePassword(password);
+
+  if (!isMatch) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid credentials'
+    });
+  }
+
+  const token = generateToken(user._id);
+
+  res.json({
+    success: true,
+    token,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email
+    }
+  });
 };
 
 // @route   GET /api/auth/me
 // @desc    Get current logged in user
 // @access  Private
 exports.getMe = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user.id);
 
-    res.json({
-      success: true,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
-  }
+  res.json({
+    success: true,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email
+    }
+  });
 };
