@@ -35,7 +35,7 @@ const router = createBrowserRouter([
   },
 ]);
 
-function Index() {
+function App() {
   const { loading } = useAuth();
 
   if (loading) {
@@ -52,4 +52,4 @@ function Index() {
   return <RouterProvider router={router} />;
 }
 
-export default Index;
+export default App;

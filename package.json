@@ -11,6 +11,6 @@
     "build:frontend": "cd frontend && npm run build"
   },
   "keywords": ["react", "nodejs", "socketio", "mongodb", "collaborative-editor"],
-  "author": "Your Name",
+  "author": "Harsh Agrawal",
   "license": "MIT"
 }
