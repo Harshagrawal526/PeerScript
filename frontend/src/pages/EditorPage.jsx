@@ -134,7 +134,6 @@ function EditorPage() {
   useEffect(() => {
     if (socket && roomId) {
       socket.emit('join-room', roomId);
-      console.log('Joined room:', roomId);
     }
 
     return () => {
@@ -148,7 +147,6 @@ function EditorPage() {
     if (!socket) return;
 
     socket.on('load-code', (code) => {
-      console.log('Loading existing code:', code);
       setHtml(code.html);
       setCss(code.css);
       setJs(code.js);

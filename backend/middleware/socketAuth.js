@@ -30,7 +30,6 @@ const socketAuthMiddleware = async (socket, next) => {
       email: user.email
     };
 
-    console.log(`✅ Authenticated socket: ${socket.id} -> ${user.username}`);
     next();
   } catch (error) {
     console.error('Socket auth error:', error.message);

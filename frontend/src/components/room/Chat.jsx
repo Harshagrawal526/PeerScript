@@ -43,12 +43,11 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     }
   }, [newMessage]);
 
-  // AUTO-SET USERNAME FOR AUTHENTICATED USERS
+  // Authenticated users get their username assigned by the server
   useEffect(() => {
     if (!socket) return;
 
     socket.on('username-auto-set', (data) => {
-      console.log('✅ Username auto-set:', data.username);
       setUsername(data.username);
       setIsUsernameSet(true);
       setUsernameError('');
@@ -218,7 +217,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
         </button>
       </div>
 
-      {/* Username Setup - ONLY FOR ANONYMOUS USERS */}
+      {/* Username setup (anonymous users only) */}
       {!isUsernameSet ? (
         <div className="flex-1 flex items-center justify-center p-6">
           <form onSubmit={handleSetUsername} className="w-full">

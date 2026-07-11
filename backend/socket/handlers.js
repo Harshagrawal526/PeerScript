@@ -22,13 +22,11 @@ const handleJoinRoom = (io, socket) => async (roomId) => {
   
   if (username) {
     activeRoom.usernames.add(username);
-    console.log(`User ${socket.id} auto-set username to ${username} (authenticated)`);
-    
     socket.emit('username-auto-set', { username });
     socket.to(roomId).emit('user-joined-chat', { username });
   }
 
-  console.log(`User ${socket.id} joined room ${roomId}. Users: ${activeRoom.users.size}`);
+  console.log(`User ${socket.id} joined room ${roomId} (${activeRoom.users.size} users)`);
 
   try {
     const dbRoom = await Room.findOne({ roomId });
@@ -61,8 +59,6 @@ const handleSetUsername = (io, socket) => ({ roomId, username }) => {
       
       user.username = username;
       room.usernames.add(username);
-      console.log(`User ${socket.id} set username to ${username} in room ${roomId}`);
-      
       socket.emit('username-accepted');
       socket.to(roomId).emit('user-joined-chat', { username });
     }
@@ -83,7 +79,6 @@ const handleSendMessage = (io, socket) => ({ roomId, message }) => {
       };
       
       io.to(roomId).emit('chat-message', messageData);
-      console.log(`Message from ${user.username} in room ${roomId}: ${message}`);
     }
   }
 };
@@ -123,8 +118,6 @@ const handleCodeChange = (io, socket) => async ({ roomId, language, code }) => {
 };
 
 const handleDisconnect = (io, socket) => () => {
-  console.log('❌ User disconnected:', socket.id);
-
   activeRooms.forEach((room, roomId) => {
     if (room.users.has(socket.id)) {
       handleUserLeave(io, socket.id, roomId);
@@ -145,11 +138,10 @@ const handleUserLeave = (io, socketId, roomId) => {
     room.users.delete(socketId);
     const usersInRoom = room.users.size;
 
-    console.log(`User ${socketId} left room ${roomId}. Users remaining: ${usersInRoom}`);
+    console.log(`User ${socketId} left room ${roomId} (${usersInRoom} users remaining)`);
 
     if (usersInRoom === 0) {
       activeRooms.delete(roomId);
-      console.log(`Room ${roomId} removed from memory`);
     } else {
       io.to(roomId).emit('users-in-room', usersInRoom);
     }

@@ -1,8 +1,6 @@
-// Generate a unique room ID
-export const generateRoomId = () => {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
-};
+// Generate a unique, unguessable room ID (used for anonymous rooms;
+// authenticated rooms get their ID from the server)
+export const generateRoomId = () => crypto.randomUUID();
 
 // Extract room ID from URL or plain input
 export const extractRoomIdFromInput = (input) => {

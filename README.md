@@ -62,6 +62,7 @@ Visit `http://localhost:5173`
 | `MONGODB_URI` | MongoDB connection string |
 | `JWT_SECRET` | Secret key for signing JWTs |
 | `JWT_EXPIRE` | Token lifetime, e.g. `7d` |
+| `CORS_ORIGINS` | Comma-separated allowed origins (default: `http://localhost:5173`) |
 
 **Frontend** — create `frontend/.env`:
 

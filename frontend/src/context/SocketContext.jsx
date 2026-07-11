@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(true);
-  const { token } = useAuth(); // GET TOKEN FROM AUTH CONTEXT
+  const { token } = useAuth();
 
   useEffect(() => {
     // Pass token in socket handshake
@@ -24,13 +24,11 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('connect', () => {
-      console.log('✅ Connected to server:', newSocket.id);
       setConnected(true);
       setConnecting(false);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('❌ Disconnected from server');
       setConnected(false);
     });
 
