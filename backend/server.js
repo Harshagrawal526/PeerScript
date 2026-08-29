@@ -7,9 +7,7 @@ const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// Fail at boot rather than at the first login. A missing JWT_SECRET or
-// JWT_EXPIRE makes jwt.sign throw, which would otherwise surface as a 500 on
-// register and login while every other route looked healthy.
+// Without these, jwt.sign throws on the first login rather than at startup.
 const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'JWT_EXPIRE'];
 const missingEnv = REQUIRED_ENV.filter((name) => !process.env[name]);
 
@@ -77,7 +75,6 @@ app.use('/api', apiLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-// Health check route
 app.get('/', (req, res) => {
   res.json({
     message: 'PeerScript Backend is running!',
@@ -86,25 +83,19 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/rooms', require('./routes/rooms'));
 
-// Unknown API paths should read as missing, not fall through to the SPA's
-// generic failure handling.
 app.use('/api', (req, res) => {
   res.status(404).json({ success: false, message: 'Not found' });
 });
 
 app.use(require('./middleware/errorHandler'));
 
-// Socket authentication middleware
 io.use(socketAuthMiddleware);
 
-// Socket.io does not catch rejections thrown by async listeners, and an
-// unhandled rejection terminates the process by default. A database blip
-// while one client joins should drop that event, not the server and every
-// other room on it.
+// Socket.io does not catch rejections from async listeners, and Node exits on
+// an unhandled one. A failure in one room must not take down the server.
 const guard = (handler) => async (...args) => {
   try {
     await handler(...args);

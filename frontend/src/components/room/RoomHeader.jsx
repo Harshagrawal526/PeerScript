@@ -22,7 +22,6 @@ const RoomHeader = ({
   const menuRef = useRef(null);
   const { user, isAuthenticated } = useAuth();
 
-  // Close the compact dropdown when clicking outside it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../utils/api';
 
-// Membership of a room: joining and leaving it, its name, how many people are
-// in it, and whether the server let us in at all.
+// Membership of a room: joining and leaving, its name, size, and whether the
+// server let us in at all.
 export const useRoomSession = (socket, roomId, token) => {
   const [roomName, setRoomName] = useState('');
   const [usersCount, setUsersCount] = useState(1);
@@ -36,12 +36,11 @@ export const useRoomSession = (socket, roomId, token) => {
 
     const onUsersInRoom = (count) => setUsersCount(count);
 
-    // Private-room gate: the server refuses join/sync for non-creators, and a
-    // later successful sync clears it (e.g. after logging in as the creator).
+    // The server refuses join/sync for non-creators; a later sync clears it.
     const onDenied = () => setAccessDenied(true);
 
-    // The server could not read the room, so it is withholding the document
-    // rather than serving an empty one that would overwrite the saved code.
+    // Server withheld the document rather than serve an empty one that would
+    // overwrite the room's saved code.
     const onUnavailable = () => setUnavailable(true);
 
     const onSynced = () => {
@@ -55,8 +54,7 @@ export const useRoomSession = (socket, roomId, token) => {
     socket.on('yjs-sync', onSynced);
 
     return () => {
-      // Detach by reference: socket.off with only an event name would also
-      // remove listeners other parts of the app registered for it.
+      // By reference: socket.off with only a name removes every listener for it.
       socket.off('users-in-room', onUsersInRoom);
       socket.off('room-access-denied', onDenied);
       socket.off('room-unavailable', onUnavailable);

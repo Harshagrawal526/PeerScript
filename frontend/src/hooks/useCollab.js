@@ -25,9 +25,8 @@ const colorFor = (name) => {
   return USER_COLORS[Math.abs(hash) % USER_COLORS.length];
 };
 
-// Shares a Y.Doc with everyone in the room over the existing Socket.io
-// connection, plus an Awareness instance for remote cursors/selections.
-// Returns { ydoc, awareness, ytexts: { html, css, js } } once created.
+// Shares a Y.Doc with the room over the existing Socket.io connection, plus an
+// Awareness instance for remote cursors and selections.
 export const useCollab = (socket, roomId, displayName) => {
   const [collab, setCollab] = useState(null);
 

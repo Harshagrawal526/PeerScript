@@ -10,9 +10,8 @@ const BEAUTIFY_OPTIONS = {
   wrap_line_length: 0
 };
 
-// One entry per editor pane. Behaviour used to be dispatched on the visible
-// label, so renaming a pane in the UI would have quietly broken formatting and
-// downloads; everything is keyed on the language id instead.
+// One entry per editor pane, keyed on the language id rather than the visible
+// label, so renaming a pane cannot change how it formats or downloads.
 export const LANGUAGES = {
   html: {
     label: 'HTML',

@@ -24,7 +24,6 @@ export default function EditorToolbar({ label, open, onToggleOpen, status, onFor
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [menuOpen])
 
-  // Running an action from the overflow menu should also dismiss it.
   const fromMenu = (action) => () => {
     setMenuOpen(false)
     action()

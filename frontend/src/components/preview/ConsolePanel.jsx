@@ -10,7 +10,6 @@ const TYPE_STYLES = {
 export default function ConsolePanel({ logs, onClear }) {
   const endRef = useRef(null);
 
-  // Follow the tail as output arrives, the way a terminal does.
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' });
   }, [logs]);

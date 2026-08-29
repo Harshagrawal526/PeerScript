@@ -1,5 +1,4 @@
-// Full-screen message shown in place of a page: a room that cannot be opened,
-// a URL that does not exist. Actions are passed as children.
+// Full-screen message shown in place of a page. Actions are children.
 export default function Notice({ title, titleClassName, message, children }) {
   return (
     <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">

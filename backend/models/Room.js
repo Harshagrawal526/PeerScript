@@ -43,7 +43,6 @@ const RoomSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Update lastModified on save
 RoomSchema.pre('save', function(next) {
   this.lastModified = Date.now();
   next();

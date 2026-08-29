@@ -3,15 +3,13 @@ import { LANGUAGES } from '../utils/languages';
 
 const CONFIRMATION_MS = 2000;
 
-// Copy, download and format for one editor pane, plus the transient status the
-// toolbar flashes back. Only one confirmation can be showing at a time, so it
-// is a single value rather than a flag per action.
+// Copy, download and format for one pane. Only one confirmation shows at a
+// time, so status is a single value rather than a flag per action.
 export const useEditorActions = (ytext, language) => {
   const [status, setStatus] = useState(null);
   const timeoutRef = useRef(null);
 
-  // Otherwise a pane unmounted within the confirmation window leaves a timer
-  // holding a reference to it.
+  // A pane unmounted mid-confirmation would otherwise leave a live timer.
   useEffect(() => () => clearTimeout(timeoutRef.current), []);
 
   const confirm = useCallback((next) => {

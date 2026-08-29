@@ -15,7 +15,6 @@ export const SocketProvider = ({ children }) => {
   const { token } = useAuth();
 
   useEffect(() => {
-    // Pass token in socket handshake
     const newSocket = io(SOCKET_URL, {
       auth: {
         token: token || null

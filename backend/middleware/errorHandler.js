@@ -2,9 +2,8 @@
 // route handlers here automatically, so controllers don't need try/catch.
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
-  // A unique index is the only thing standing between two simultaneous
-  // registrations of the same email, and losing that race is the client's
-  // situation to handle, not a server fault.
+  // Two simultaneous registrations both pass the existence check; the loser
+  // hits the unique index. That is the client's situation, not a server fault.
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern || {})[0];
     return res.status(409).json({

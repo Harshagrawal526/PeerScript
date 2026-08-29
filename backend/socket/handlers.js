@@ -4,16 +4,14 @@ const Room = require('../models/Room');
 const LANGUAGES = ['html', 'css', 'js'];
 const SAVE_DEBOUNCE_MS = 2000;
 
-// Everything below arrives straight from a client, so none of it can be
-// trusted to be a string, to be a sane length, or to be present at all.
+// Client-supplied values: not necessarily strings, bounded, or present.
 const MAX_ROOM_ID_LENGTH = 64;
 const MAX_USERNAME_LENGTH = 20;
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_UPDATE_BYTES = 1024 * 1024;
 
-// One socket only ever needs the room it has open. The cap stops a client
-// looping join-room over fresh ids, which would otherwise allocate a Y.Doc per
-// id and grow activeRooms for as long as the connection lives.
+// join-room allocates a Y.Doc per unseen id, so without a cap a client could
+// loop over fresh ids and grow activeRooms for as long as it stays connected.
 const MAX_ROOMS_PER_SOCKET = 5;
 
 const asRoomId = (value) =>
@@ -30,13 +28,12 @@ const asText = (value, maxLength) => {
 // socket.rooms always contains the socket's own id alongside any joined rooms.
 const joinedRoomCount = (socket) => socket.rooms.size - 1;
 
-// In-memory active rooms: roomId -> { users, usernames, ydoc, initPromise, saveTimer, dirty }
+// roomId -> room state; see ensureRoom for the shape
 const activeRooms = new Map();
 
-// Seed the shared doc from MongoDB the first time a room becomes active.
-// Reports whether the read succeeded: an empty doc because the room is new and
-// an empty doc because the database could not be reached look identical
-// afterwards, and only one of them is safe to save.
+// Seeds the shared doc from MongoDB. Reports whether the read succeeded: a doc
+// empty because the room is new and one empty because the read failed look the
+// same afterwards, and only the first is safe to save.
 const loadRoomIntoDoc = async (roomId, ydoc) => {
   try {
     const dbRoom = await Room.findOne({ roomId });
@@ -81,8 +78,7 @@ const ensureRoom = (roomId) => {
   return activeRooms.get(roomId);
 };
 
-// Waits for the initial read, retrying once if it failed, so a transient
-// database error does not leave the room permanently empty for its members.
+// Retries once, so a transient read error does not strand the room empty.
 const ensureLoaded = async (roomId) => {
   const room = activeRooms.get(roomId);
   if (!room) return false;
@@ -97,8 +93,7 @@ const persistRoom = async (roomId) => {
   const room = activeRooms.get(roomId);
   if (!room || !room.dirty) return;
 
-  // Never write back a document that was never filled from the database. The
-  // read failed, so this doc is empty for the wrong reason, and the upsert
+  // The load failed, so this doc is empty for the wrong reason and the upsert
   // below would replace the room's saved code with nothing.
   if (!room.loaded) return;
 

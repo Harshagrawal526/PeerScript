@@ -3,12 +3,9 @@ import { buildPreviewDoc } from '../utils/previewDoc';
 
 const REBUILD_DELAY_MS = 250;
 
-// Mirrors the room's shared Y.Texts into React state and rebuilds the preview
-// document from them.
-//
-// The rebuild is debounced because every rebuild reloads the iframe and re-runs
-// the room's code. In a shared room the edits arrive from everyone at once, so
-// the burst this smooths out is not just one person's typing.
+// Mirrors the room's shared Y.Texts into React state and rebuilds the preview.
+// Debounced because every rebuild reloads the iframe and re-runs the code, and
+// in a shared room the edits arrive from everyone at once.
 export const useLivePreview = (collab, onRebuild) => {
   const [code, setCode] = useState({ html: '', css: '', js: '' });
   const [srcDoc, setSrcDoc] = useState('');

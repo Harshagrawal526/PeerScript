@@ -21,10 +21,8 @@ function Home() {
 
   const quickCreateRoom = async () => {
     if (isAuthenticated && token) {
-      // Show modal for authenticated users
       setShowQuickCreateModal(true);
     } else {
-      // Anonymous room for non-logged-in users
       const newRoomId = generateRoomId();
       navigate(`/app?room=${newRoomId}`);
     }

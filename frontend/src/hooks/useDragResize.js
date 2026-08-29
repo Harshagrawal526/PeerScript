@@ -2,25 +2,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const resolve = (bound) => (typeof bound === 'function' ? bound() : bound);
 
-// Shared mechanics for a drag-to-resize handle: the drag lifecycle, the
-// document-level listeners that keep the drag alive once the pointer leaves the
-// handle, the body class that suppresses selection and stops iframes below
-// swallowing the events, and coalescing pointer moves into one animation frame
-// so a fast drag costs one layout pass per frame rather than one per event.
-//
-// What differs between handles is only the measurement, so callers supply
-// `measure` to turn a mousemove into a size in whatever unit suits them -- a
-// percentage of a container, a pixel width off the viewport edge -- and the
-// bounds to clamp it to. Bounds may be functions when they depend on the
-// viewport. Returning null from `measure` skips the frame.
+// Drag lifecycle, document-level listeners and animation-frame coalescing for a
+// resize handle. Only the measurement differs between handles, so callers pass
+// `measure` (return null to skip a frame) and bounds, which may be functions
+// when they depend on the viewport.
 export const useDragResize = ({ initial, min, max, measure, bodyClass }) => {
   const [size, setSize] = useState(initial);
   const [isResizing, setIsResizing] = useState(false);
   const frameRef = useRef(null);
   const measureRef = useRef(measure);
 
-  // Kept in a ref so an inline measure function does not tear down and
-  // re-attach the listeners on every render.
+  // In a ref so an inline measure function does not re-attach the listeners.
   useEffect(() => {
     measureRef.current = measure;
   });
@@ -48,6 +40,8 @@ export const useDragResize = ({ initial, min, max, measure, bodyClass }) => {
 
     const stopResize = () => setIsResizing(false);
 
+    // The class is not cosmetic: its pointer-events rule is what stops the
+    // preview iframe swallowing the mousemove events this drag needs.
     document.body.classList.add(bodyClass);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', stopResize);

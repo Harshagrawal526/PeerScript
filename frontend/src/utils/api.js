@@ -1,7 +1,5 @@
 import { API_URL } from '../config';
 
-// Thin wrapper around fetch: prefixes the API base URL, handles JSON
-// encoding/decoding, and attaches the Authorization header when a token is given.
 const request = async (path, { method = 'GET', token, body } = {}) => {
   const headers = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';

@@ -1,10 +1,6 @@
-// Guarded sessionStorage access.
-//
-// Reading window.sessionStorage is not guaranteed to succeed: browsers set to
-// block site data, and the private modes of some browsers, throw a
-// SecurityError on the property access itself rather than returning null. A
-// stored token is a convenience, never a prerequisite for rendering, so every
-// operation degrades to "no stored value" instead of propagating.
+// Browsers set to block site data throw on the sessionStorage access itself
+// rather than returning null. A stored token is never a prerequisite for
+// rendering, so every operation degrades to "no stored value".
 export const sessionStore = {
   get(key) {
     try {
@@ -27,7 +23,7 @@ export const sessionStore = {
     try {
       window.sessionStorage.removeItem(key);
     } catch {
-      // Nothing to clear if storage was never reachable.
+      // Nothing to clear if storage is unreachable.
     }
   }
 };

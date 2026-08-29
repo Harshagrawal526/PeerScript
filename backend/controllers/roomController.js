@@ -31,9 +31,7 @@ const nextUntitledName = async (creatorId) => {
   return `Untitled Project ${maxNumber + 1}`;
 };
 
-// @route   POST /api/rooms
-// @desc    Create a new room
-// @access  Private
+// POST /api/rooms
 exports.createRoom = async (req, res) => {
   const roomId = generateRoomId();
   let { name, isPublic = true } = req.body;
@@ -62,9 +60,7 @@ exports.createRoom = async (req, res) => {
   });
 };
 
-// @route   GET /api/rooms/my-rooms
-// @desc    Get current user's rooms
-// @access  Private
+// GET /api/rooms/my-rooms
 exports.getMyRooms = async (req, res) => {
   const rooms = await Room.find({ creator: req.user.id })
     .select('roomId name isPublic lastModified createdAt')
@@ -73,9 +69,7 @@ exports.getMyRooms = async (req, res) => {
   res.json({ success: true, rooms });
 };
 
-// @route   GET /api/rooms/:roomId
-// @desc    Get room details
-// @access  Public (with optional auth)
+// GET /api/rooms/:roomId
 exports.getRoom = async (req, res) => {
   const room = await Room.findOne({ roomId: req.params.roomId })
     .populate('creator', 'username');
@@ -109,9 +103,7 @@ exports.getRoom = async (req, res) => {
   });
 };
 
-// @route   PUT /api/rooms/:roomId
-// @desc    Update room name
-// @access  Private (creator only)
+// PUT /api/rooms/:roomId
 exports.updateRoom = async (req, res) => {
   const room = await Room.findOne({ roomId: req.params.roomId });
 
@@ -142,9 +134,7 @@ exports.updateRoom = async (req, res) => {
   });
 };
 
-// @route   DELETE /api/rooms/:roomId
-// @desc    Delete a room
-// @access  Private (creator only)
+// DELETE /api/rooms/:roomId
 exports.deleteRoom = async (req, res) => {
   const room = await Room.findOne({ roomId: req.params.roomId });
 

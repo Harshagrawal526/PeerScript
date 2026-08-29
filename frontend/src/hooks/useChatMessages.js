@@ -7,8 +7,6 @@ const systemMessage = (text) => ({
 });
 
 // The room's chat transcript and the identity the server has accepted for us.
-// Authenticated members are named by the server; anonymous ones claim a name
-// and may be told it is taken.
 export const useChatMessages = (socket, roomId) => {
   const [messages, setMessages] = useState([]);
   const [username, setUsername] = useState('');
@@ -42,8 +40,7 @@ export const useChatMessages = (socket, roomId) => {
     socket.on('username-accepted', onUsernameAccepted);
 
     return () => {
-      // Detach by reference: socket.off with only an event name removes every
-      // listener registered for it, not just the ones set up here.
+      // By reference: socket.off with only a name removes every listener for it.
       socket.off('username-auto-set', onUsernameAutoSet);
       socket.off('chat-message', onChatMessage);
       socket.off('user-joined-chat', onUserJoined);

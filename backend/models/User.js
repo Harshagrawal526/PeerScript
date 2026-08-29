@@ -35,11 +35,8 @@ const UserSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Hash password before saving.
-// The early return matters: without it, saving a user for any other reason
-// (a rename, say) would hash the already-hashed password a second time and
-// lock the account out, since bcrypt.compare would then be checking the
-// plaintext against a hash of a hash.
+// The early return matters: without it, any later save would hash the stored
+// hash again and lock the account out.
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
     return next();
@@ -50,7 +47,6 @@ UserSchema.pre('save', async function(next) {
   next();
 });
 
-// Compare password method
 UserSchema.methods.comparePassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };

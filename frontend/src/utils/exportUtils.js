@@ -20,15 +20,13 @@ const buildDocument = ({ html, css, js }) => {
 </html>`;
 };
 
-// Bundle a room's three panes into one standalone HTML file.
 export const exportAsHTML = (html, css, js, filename = DEFAULT_FILENAME) => {
   if (!html.trim() && !css.trim() && !js.trim()) {
     return { success: false, message: 'Cannot export empty code. Please write some code first.' };
   }
 
   try {
-    // The same formatter the editor's Format action uses, so an exported file
-    // is laid out exactly like the code the room was working on.
+    // The same formatter the editor's Format action uses.
     const document = buildDocument({
       html: html.trim() ? LANGUAGES.html.format(html) : '',
       css: css.trim() ? LANGUAGES.css.format(css) : '',

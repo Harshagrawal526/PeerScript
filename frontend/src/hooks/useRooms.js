@@ -39,10 +39,8 @@ export const useRooms = (token) => {
     [token]
   );
 
-  // The updates below go through the functional form: a delete and a rename
-  // resolving close together would otherwise both start from the list as it
-  // was when their handler was created, and the slower one would undo the
-  // other.
+  // Functional form: two writes resolving close together would otherwise both
+  // start from the list as it was, and the slower one would undo the other.
   const deleteRoom = useCallback(
     async (roomId) => {
       const { ok } = await api.delete(`/api/rooms/${roomId}`, token);

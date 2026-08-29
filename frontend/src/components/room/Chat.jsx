@@ -38,12 +38,10 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     bodyClass: 'chat-resizing'
   });
 
-  // Report the width up so the editor can leave room for the panel.
   useEffect(() => {
     onResize?.(chatWidth);
   }, [chatWidth, onResize]);
 
-  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -52,7 +50,6 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     scrollToBottom();
   }, [messages]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';

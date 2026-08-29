@@ -19,7 +19,6 @@ function Dashboard() {
 
   const { rooms, loading, createRoom, deleteRoom, renameRoom } = useRooms(token);
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');

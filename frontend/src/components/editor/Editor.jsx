@@ -35,8 +35,7 @@ export default function Editor({ language, ytext, awareness }) {
   const { label } = LANGUAGES[language]
   const { status, copy, download, format } = useEditorActions(ytext, language)
 
-  // Mount a CodeMirror 6 view bound to the shared Y.Text; yCollab keeps the
-  // view and the CRDT in sync in both directions, including remote cursors.
+  // yCollab keeps the view and the CRDT in sync both ways, remote cursors too.
   useEffect(() => {
     if (!ytext || !awareness || !containerRef.current) return
 

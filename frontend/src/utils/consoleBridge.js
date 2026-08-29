@@ -1,15 +1,11 @@
-// Script injected into the sandboxed preview iframe so console output and
-// uncaught errors from the room's code reach the parent window.
-//
-// The sandbox deliberately omits allow-same-origin, which leaves the frame on
-// an opaque origin that postMessage cannot target by name -- '*' is the only
-// available target here. Nothing sensitive is sent, and the parent verifies
-// the sender by comparing event.source against its own iframe.
+// Injected into the preview iframe so its console output and uncaught errors
+// reach the parent. The sandbox omits allow-same-origin, so the frame has an
+// opaque origin and '*' is the only possible postMessage target; the parent
+// verifies the sender by window identity instead.
 
 export const PREVIEW_MESSAGE_SOURCE = 'peerscript-preview-console';
 
-// Long values are trimmed in the frame rather than the panel, so a runaway
-// log never has to cross the boundary in full.
+// Trimmed here rather than in the panel, so a runaway log never crosses in full.
 const MAX_ARG_LENGTH = 2000;
 
 export const consoleBridge = `<script>
@@ -27,8 +23,7 @@ export const consoleBridge = `<script>
     return 'f ' + (value.name || 'anonymous') + '()';
   }
 
-  // console.log shows types that JSON drops silently (undefined, functions,
-  // symbols) and chokes on cycles, so handle those before falling back to it.
+  // JSON drops undefined, functions and symbols, and throws on cycles.
   function serialize(value) {
     if (typeof value === 'string') return value;
     if (value === undefined) return 'undefined';

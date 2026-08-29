@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { PREVIEW_MESSAGE_SOURCE } from '../utils/consoleBridge';
 
-// Only the newest entries are kept. A `for (;;) console.log(i)` in the preview
-// would otherwise grow this array until the tab runs out of memory, which is
-// exactly the kind of code someone tries in a scratch editor.
+// Newest entries only: an unbounded log would let `for (;;) console.log(i)` in
+// the preview exhaust the tab's memory.
 const MAX_LOGS = 500;
 
 // Collects console output relayed by the preview iframe's bridge script.
@@ -14,10 +13,8 @@ export const usePreviewConsole = (iframeRef) => {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      // The preview sandbox omits allow-same-origin, so event.origin is the
-      // opaque "null" and proves nothing about the sender. Matching the source
-      // window against our own frame is the check that actually holds: another
-      // tab, frame or extension posting the same payload does not pass it.
+      // event.origin is the opaque "null" for this sandbox and proves nothing;
+      // matching the sending window against our own frame is the real check.
       if (!iframeRef.current || event.source !== iframeRef.current.contentWindow) return;
       if (event.data?.source !== PREVIEW_MESSAGE_SOURCE) return;
 

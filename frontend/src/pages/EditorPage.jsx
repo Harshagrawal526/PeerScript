@@ -46,11 +46,9 @@ function EditorPage() {
 
   const { logs, clearLogs } = usePreviewConsole(iframeRef);
 
-  // Shared Yjs document + cursor presence for this room
   const collab = useCollab(socket, roomId, user?.username || 'Anonymous');
 
-  // Each rebuild re-runs the room's code, so the previous run's output no
-  // longer describes what is on screen.
+  // Each rebuild re-runs the code, so the previous run's output is stale.
   const { html, css, js, srcDoc } = useLivePreview(collab, clearLogs);
 
   const clearCode = () => {

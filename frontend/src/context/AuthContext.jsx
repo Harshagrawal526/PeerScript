@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [initialCheckDone, setInitialCheckDone] = useState(false);
 
-  // Check if user is logged in on mount
   useEffect(() => {
     const checkAuth = async () => {
       const storedToken = sessionStore.get('token');
@@ -31,7 +30,6 @@ export const AuthProvider = ({ children }) => {
             setUser(data.user);
             setToken(storedToken);
           } else {
-            // Token invalid, clear it
             sessionStore.remove('token');
             setUser(null);
             setToken(null);

@@ -7,9 +7,7 @@ const generateToken = (id) => {
   });
 };
 
-// @route   POST /api/auth/register
-// @desc    Register a new user
-// @access  Public
+// POST /api/auth/register
 exports.register = async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -37,9 +35,7 @@ exports.register = async (req, res) => {
   });
 };
 
-// @route   POST /api/auth/login
-// @desc    Login user
-// @access  Public
+// POST /api/auth/login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -74,9 +70,7 @@ exports.login = async (req, res) => {
   });
 };
 
-// @route   GET /api/auth/me
-// @desc    Get current logged in user
-// @access  Private
+// GET /api/auth/me
 // protect has already loaded the user, so there is nothing to fetch here.
 exports.getMe = async (req, res) => {
   res.json({

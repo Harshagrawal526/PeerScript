@@ -2,7 +2,6 @@
 // authenticated rooms get their ID from the server)
 export const generateRoomId = () => crypto.randomUUID();
 
-// Extract room ID from URL or plain input
 export const extractRoomIdFromInput = (input) => {
   try {
     if (input.includes('http://') || input.includes('https://')) {
@@ -16,7 +15,6 @@ export const extractRoomIdFromInput = (input) => {
   }
 };
 
-// Copy text to clipboard
 export const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text);

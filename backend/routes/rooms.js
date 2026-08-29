@@ -12,9 +12,6 @@ const {
 
 const router = express.Router();
 
-// @route   POST /api/rooms
-// @desc    Create a new room
-// @access  Private
 router.post(
   '/',
   protect,
@@ -29,19 +26,10 @@ router.post(
   createRoom
 );
 
-// @route   GET /api/rooms/my-rooms
-// @desc    Get current user's rooms
-// @access  Private
 router.get('/my-rooms', protect, getMyRooms);
 
-// @route   GET /api/rooms/:roomId
-// @desc    Get room details
-// @access  Public (with optional auth)
 router.get('/:roomId', optionalAuth, getRoom);
 
-// @route   PUT /api/rooms/:roomId
-// @desc    Update room name
-// @access  Private (creator only)
 router.put(
   '/:roomId',
   protect,
@@ -55,9 +43,6 @@ router.put(
   updateRoom
 );
 
-// @route   DELETE /api/rooms/:roomId
-// @desc    Delete a room
-// @access  Private (creator only)
 router.delete('/:roomId', protect, deleteRoom);
 
 module.exports = router;
