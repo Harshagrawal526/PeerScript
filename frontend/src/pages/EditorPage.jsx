@@ -9,6 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import { useCollab } from '../hooks/useCollab';
 import { api } from '../utils/api';
 import { buildPreviewDoc } from '../utils/previewDoc';
+import OutputPanel from '../components/preview/OutputPanel';
+import { usePreviewConsole } from '../hooks/usePreviewConsole';
 
 function EditorPage() {
   const { token, user } = useAuth();
@@ -30,7 +32,10 @@ function EditorPage() {
 
   const containerRef = useRef(null);
   const frameRef = useRef(null);
+  const iframeRef = useRef(null);
   const { socket, connected } = useSocket();
+
+  const { logs, clearLogs } = usePreviewConsole(iframeRef);
 
   // Shared Yjs document + cursor presence for this room
   const collab = useCollab(socket, roomId, user?.username || 'Anonymous');
@@ -194,11 +199,14 @@ function EditorPage() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
+      // Each rebuild re-runs the room's code, so the previous run's output
+      // no longer describes what is on screen.
+      clearLogs();
       setSrcDoc(buildPreviewDoc({ html, css, js }));
     }, 250);
 
     return () => clearTimeout(timeout);
-  }, [html, css, js]);
+  }, [html, css, js, clearLogs]);
 
   if (accessDenied) {
     return (
@@ -274,24 +282,13 @@ function EditorPage() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center text-xl py-2 font-semibold shadow-md flex-shrink-0">
-          OUTPUT
-        </div>
-
-        <div
-          className="flex bg-blue-50 overflow-hidden"
-          style={{ height: `${outputHeight}%` }}
-        >
-          <iframe
-            srcDoc={srcDoc}
-            title="output"
-            sandbox="allow-scripts"
-            frameBorder="0"
-            width="100%"
-            height="100%"
-            className="bg-white"
-          />
-        </div>
+        <OutputPanel
+          srcDoc={srcDoc}
+          iframeRef={iframeRef}
+          logs={logs}
+          onClearLogs={clearLogs}
+          height={outputHeight}
+        />
       </div>
 
       <Chat
