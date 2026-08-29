@@ -4,20 +4,20 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Modal from '../components/ui/Modal';
-import { api } from '../utils/api';
+import { useRooms } from '../hooks/useRooms';
 
 function Dashboard() {
   const navigate = useNavigate();
   const { user, token, isAuthenticated } = useAuth();
   
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [creating, setCreating] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
-const [renamingRoom, setRenamingRoom] = useState(null);
-const [renaming, setRenaming] = useState(false);
+  const [renamingRoom, setRenamingRoom] = useState(null);
+  const [renaming, setRenaming] = useState(false);
+
+  const { rooms, loading, createRoom, deleteRoom, renameRoom } = useRooms(token);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -26,37 +26,13 @@ const [renaming, setRenaming] = useState(false);
     }
   }, [isAuthenticated, navigate]);
 
-  // Fetch user's rooms
-  useEffect(() => {
-    const fetchRooms = async () => {
-      if (!token) return;
-
-      try {
-        const { ok, data } = await api.get('/api/rooms/my-rooms', token);
-
-        if (ok) {
-          setRooms(data.rooms);
-        }
-      } catch (error) {
-        console.error('Fetch rooms error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRooms();
-  }, [token]);
-
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     setCreating(true);
 
     try {
-      const { ok, data } = await api.post('/api/rooms', { name: newRoomName || 'Untitled Project' }, token);
-
-      if (ok) {
-        navigate(`/app?room=${data.room.roomId}`);
-      }
+      const room = await createRoom(newRoomName);
+      if (room) navigate(`/app?room=${room.roomId}`);
     } catch (error) {
       console.error('Create room error:', error);
       alert('Failed to create room');
@@ -71,13 +47,7 @@ const [renaming, setRenaming] = useState(false);
     }
 
     try {
-      const { ok } = await api.delete(`/api/rooms/${roomId}`, token);
-
-      if (ok) {
-        setRooms(rooms.filter(room => room.roomId !== roomId));
-      } else {
-        alert('Failed to delete room');
-      }
+      if (!(await deleteRoom(roomId))) alert('Failed to delete room');
     } catch (error) {
       console.error('Delete room error:', error);
       alert('Failed to delete room');
@@ -85,34 +55,26 @@ const [renaming, setRenaming] = useState(false);
   };
 
   const handleRenameRoom = async (e) => {
-  e.preventDefault();
-  if (!newRoomName.trim() || !renamingRoom) return;
+    e.preventDefault();
+    if (!newRoomName.trim() || !renamingRoom) return;
 
-  setRenaming(true);
+    setRenaming(true);
 
-  try {
-    const { ok, data } = await api.put(`/api/rooms/${renamingRoom.roomId}`, { name: newRoomName.trim() }, token);
-
-    if (ok) {
-      // Update rooms list
-      setRooms(rooms.map(room =>
-        room.roomId === renamingRoom.roomId 
-          ? { ...room, name: data.room.name }
-          : room
-      ));
-      setShowRenameModal(false);
-      setRenamingRoom(null);
-      setNewRoomName('');
-    } else {
+    try {
+      if (await renameRoom(renamingRoom.roomId, newRoomName.trim())) {
+        setShowRenameModal(false);
+        setRenamingRoom(null);
+        setNewRoomName('');
+      } else {
+        alert('Failed to rename room');
+      }
+    } catch (error) {
+      console.error('Rename error:', error);
       alert('Failed to rename room');
+    } finally {
+      setRenaming(false);
     }
-  } catch (error) {
-    console.error('Rename error:', error);
-    alert('Failed to rename room');
-  } finally {
-    setRenaming(false);
-  }
-};
+  };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
