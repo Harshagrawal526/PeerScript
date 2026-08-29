@@ -21,13 +21,14 @@ peerscript/
 - Conflict-free real-time collaborative editing (Yjs CRDT over Socket.io)
 - Live cursors and selections of other users in the editor
 - Live HTML/CSS/JS preview
+- Console panel capturing console output and uncaught errors from the preview
 - Built-in chat with persistent usernames
 - User authentication (JWT)
 - Auto-save to MongoDB
 - Code formatting & export
 
 ## How It Works
-Each project lives in a room identified by a unique room ID. The three files (HTML/CSS/JS) are shared Yjs CRDT documents, so concurrent edits from multiple users merge without conflicts instead of overwriting each other. Sync runs over the room's Socket.io connection (authenticated via JWT when logged in): the server holds an authoritative copy of each active room's document, relays updates and cursor presence between members, and persists the code to MongoDB so it is restored when someone joins later. The live preview is rendered client-side in a sandboxed iframe.
+Each project lives in a room identified by a unique room ID. The three files (HTML/CSS/JS) are shared Yjs CRDT documents, so concurrent edits from multiple users merge without conflicts instead of overwriting each other. Sync runs over the room's Socket.io connection (authenticated via JWT when logged in): the server holds an authoritative copy of each active room's document, relays updates and cursor presence between members, and persists the code to MongoDB so it is restored when someone joins later. The live preview is rendered client-side in a sandboxed iframe. Because that sandbox omits `allow-same-origin`, the frame cannot reach the app directly: a bridge script injected into it wraps `console.*` and listens for uncaught errors, relaying them to the parent over `postMessage`, which verifies the sender is its own frame before showing anything in the Console tab.
 
 ## Quick Start
 
