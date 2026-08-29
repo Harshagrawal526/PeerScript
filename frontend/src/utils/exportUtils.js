@@ -1,83 +1,47 @@
-// Format HTML code with proper indentation
-const formatHTML = (html) => {
-  let formatted = '';
-  let indent = 0;
-  const tab = '  '; // 2 spaces
+import { LANGUAGES } from './languages';
+import { escapeClosingTags, indentLines } from './html';
 
-  html.split(/>\s*</).forEach((node) => {
-    if (node.match(/^\/\w/)) indent--; // closing tag
-    formatted += tab.repeat(indent) + '<' + node + '>\n';
-    if (node.match(/^<?\w[^>]*[^/]$/)) indent++; // opening tag
-  });
+const DEFAULT_FILENAME = 'peerscript-export.html';
 
-  return formatted.substring(1, formatted.length - 2);
-};
+const buildDocument = ({ html, css, js }) => {
+  const head = css ? `\n  <style>\n${indentLines(escapeClosingTags(css), 4)}\n  </style>` : '';
+  const body = html ? `\n${indentLines(html, 2)}` : '';
+  const script = js ? `\n  <script>\n${indentLines(escapeClosingTags(js), 4)}\n  </script>` : '';
 
-// Format CSS code with proper indentation
-const formatCSS = (css) => {
-  return css
-    .replace(/\s*{\s*/g, ' {\n  ')
-    .replace(/;\s*/g, ';\n  ')
-    .replace(/\s*}\s*/g, '\n}\n\n')
-    .trim();
-};
-
-// Format JavaScript code with basic indentation
-const formatJS = (js) => {
-  let formatted = '';
-  let indent = 0;
-  const tab = '  ';
-
-  js.split('\n').forEach((line) => {
-    line = line.trim();
-    if (line.match(/^}/)) indent--;
-    formatted += tab.repeat(indent) + line + '\n';
-    if (line.match(/{$/)) indent++;
-  });
-
-  return formatted.trim();
-};
-
-// Check if code is empty
-const isCodeEmpty = (html, css, js) => {
-  return !html.trim() && !css.trim() && !js.trim();
-};
-
-// Export code as a single HTML file
-export const exportAsHTML = (html, css, js, filename = 'code-canvas-export.html') => {
-  // Check if all code is empty
-  if (isCodeEmpty(html, css, js)) {
-    return { success: false, message: 'Cannot export empty code. Please write some code first.' };
-  }
-
-  try {
-    // Format the code
-    const formattedHTML = html.trim() ? formatHTML(html) : '';
-    const formattedCSS = css.trim() ? formatCSS(css) : '';
-    const formattedJS = js.trim() ? formatJS(js) : '';
-
-    const fullHTML = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PeerScript Export</title>
-  ${formattedCSS ? `<style>\n    ${formattedCSS.split('\n').join('\n    ')}\n  </style>` : ''}
+  <title>PeerScript Export</title>${head}
 </head>
-<body>
-  ${formattedHTML ? formattedHTML.split('\n').join('\n  ') : ''}
-  ${formattedJS ? `<script>\n    ${formattedJS.split('\n').join('\n    ')}\n  </script>` : ''}
+<body>${body}${script}
 </body>
 </html>`;
+};
 
-    const blob = new Blob([fullHTML], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+// Bundle a room's three panes into one standalone HTML file.
+export const exportAsHTML = (html, css, js, filename = DEFAULT_FILENAME) => {
+  if (!html.trim() && !css.trim() && !js.trim()) {
+    return { success: false, message: 'Cannot export empty code. Please write some code first.' };
+  }
+
+  try {
+    // The same formatter the editor's Format action uses, so an exported file
+    // is laid out exactly like the code the room was working on.
+    const document = buildDocument({
+      html: html.trim() ? LANGUAGES.html.format(html) : '',
+      css: css.trim() ? LANGUAGES.css.format(css) : '',
+      js: js.trim() ? LANGUAGES.js.format(js) : ''
+    });
+
+    const url = URL.createObjectURL(new Blob([document], { type: 'text/html' }));
+    const link = window.document.createElement('a');
     link.href = url;
     link.download = filename;
-    document.body.appendChild(link);
+    window.document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    window.document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
     return { success: true, message: 'Code exported successfully!' };
