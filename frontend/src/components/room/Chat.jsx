@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useDragResize } from '../../hooks/useDragResize';
+import { useChatMessages } from '../../hooks/useChatMessages';
 
 const MIN_WIDTH_PERCENT = 0.10;
 const MAX_WIDTH_PERCENT = 0.35;
@@ -12,16 +13,22 @@ const minChatWidth = () => window.innerWidth * MIN_WIDTH_PERCENT;
 const maxChatWidth = () => window.innerWidth * MAX_WIDTH_PERCENT;
 
 const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
-  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [username, setUsername] = useState('');
-  const [isUsernameSet, setIsUsernameSet] = useState(false);
-  const [usernameError, setUsernameError] = useState('');
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const chatRef = useRef(null);
   
   const { isAuthenticated } = useAuth();
+
+  const {
+    messages,
+    username,
+    changeUsername,
+    isUsernameSet,
+    usernameError,
+    claimUsername,
+    sendMessage
+  } = useChatMessages(socket, roomId);
 
   const { size: chatWidth, startResize } = useDragResize({
     initial: 320,
@@ -60,79 +67,14 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     }
   }, [newMessage]);
 
-  // Authenticated users get their username assigned by the server
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on('username-auto-set', (data) => {
-      setUsername(data.username);
-      setIsUsernameSet(true);
-      setUsernameError('');
-    });
-
-    return () => {
-      socket.off('username-auto-set');
-    };
-  }, [socket]);
-
-  // Listen for incoming messages
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on('chat-message', (data) => {
-      setMessages(prev => [...prev, data]);
-    });
-
-    socket.on('user-joined-chat', (data) => {
-      setMessages(prev => [...prev, {
-        type: 'system',
-        message: `${data.username} joined the room`,
-        timestamp: Date.now()
-      }]);
-    });
-
-    socket.on('user-left-chat', (data) => {
-      setMessages(prev => [...prev, {
-        type: 'system',
-        message: `${data.username} left the room`,
-        timestamp: Date.now()
-      }]);
-    });
-
-    socket.on('username-taken', () => {
-      setUsernameError('Username already taken. Please choose another.');
-      setIsUsernameSet(false);
-    });
-
-    socket.on('username-accepted', () => {
-      setUsernameError('');
-    });
-
-    return () => {
-      socket.off('chat-message');
-      socket.off('user-joined-chat');
-      socket.off('user-left-chat');
-      socket.off('username-taken');
-      socket.off('username-accepted');
-    };
-  }, [socket]);
-
   const handleSetUsername = (e) => {
     e.preventDefault();
-    if (username.trim() && socket && roomId) {
-      setUsernameError('');
-      socket.emit('set-username', { roomId, username: username.trim() });
-      setIsUsernameSet(true);
-    }
+    claimUsername();
   };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (newMessage.trim() && socket && roomId) {
-      socket.emit('send-message', {
-        roomId,
-        message: newMessage.trim()
-      });
+    if (sendMessage(newMessage)) {
       setNewMessage('');
     }
   };
@@ -198,10 +140,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    setUsernameError('');
-                  }}
+                  onChange={(e) => changeUsername(e.target.value)}
                   placeholder="Your name"
                   maxLength={20}
                   className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 mb-3"
