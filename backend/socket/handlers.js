@@ -4,6 +4,32 @@ const Room = require('../models/Room');
 const LANGUAGES = ['html', 'css', 'js'];
 const SAVE_DEBOUNCE_MS = 2000;
 
+// Everything below arrives straight from a client, so none of it can be
+// trusted to be a string, to be a sane length, or to be present at all.
+const MAX_ROOM_ID_LENGTH = 64;
+const MAX_USERNAME_LENGTH = 20;
+const MAX_MESSAGE_LENGTH = 2000;
+const MAX_UPDATE_BYTES = 1024 * 1024;
+
+// One socket only ever needs the room it has open. The cap stops a client
+// looping join-room over fresh ids, which would otherwise allocate a Y.Doc per
+// id and grow activeRooms for as long as the connection lives.
+const MAX_ROOMS_PER_SOCKET = 5;
+
+const asRoomId = (value) =>
+  typeof value === 'string' && value.length > 0 && value.length <= MAX_ROOM_ID_LENGTH
+    ? value
+    : null;
+
+const asText = (value, maxLength) => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 && trimmed.length <= maxLength ? trimmed : null;
+};
+
+// socket.rooms always contains the socket's own id alongside any joined rooms.
+const joinedRoomCount = (socket) => socket.rooms.size - 1;
+
 // In-memory active rooms: roomId -> { users, usernames, ydoc, initPromise, saveTimer, dirty }
 const activeRooms = new Map();
 
@@ -85,7 +111,12 @@ const canAccessRoom = async (roomId, socket) => {
   }
 };
 
-const handleJoinRoom = (io, socket) => async (roomId) => {
+const handleJoinRoom = (io, socket) => async (rawRoomId) => {
+  const roomId = asRoomId(rawRoomId);
+  if (!roomId) return;
+
+  if (!socket.rooms.has(roomId) && joinedRoomCount(socket) >= MAX_ROOMS_PER_SOCKET) return;
+
   if (!(await canAccessRoom(roomId, socket))) {
     socket.emit('room-access-denied');
     return;
@@ -111,7 +142,12 @@ const handleJoinRoom = (io, socket) => async (roomId) => {
 
 // Client asks for the current doc state; reply with a full Yjs update.
 // Joins the socket.io room before encoding so no update is missed in between.
-const handleYjsRequestSync = (io, socket) => async (roomId) => {
+const handleYjsRequestSync = (io, socket) => async (rawRoomId) => {
+  const roomId = asRoomId(rawRoomId);
+  if (!roomId) return;
+
+  if (!socket.rooms.has(roomId) && joinedRoomCount(socket) >= MAX_ROOMS_PER_SOCKET) return;
+
   if (!(await canAccessRoom(roomId, socket))) {
     socket.emit('room-access-denied');
     return;
@@ -129,6 +165,10 @@ const handleYjsUpdate = (io, socket) => async ({ roomId, update }) => {
 
   const room = activeRooms.get(roomId);
   if (!room || !update) return;
+
+  // Reject oversized payloads before allocating a typed array for them
+  const size = update.byteLength ?? update.length;
+  if (typeof size !== 'number' || size > MAX_UPDATE_BYTES) return;
 
   await room.initPromise;
 
@@ -150,7 +190,10 @@ const handleYjsAwareness = (io, socket) => ({ roomId, update }) => {
   socket.to(roomId).emit('yjs-awareness', update);
 };
 
-const handleSetUsername = (io, socket) => ({ roomId, username }) => {
+const handleSetUsername = (io, socket) => ({ roomId, username: rawUsername }) => {
+  const username = asText(rawUsername, MAX_USERNAME_LENGTH);
+  if (!username || !socket.rooms.has(roomId)) return;
+
   if (activeRooms.has(roomId)) {
     const room = activeRooms.get(roomId);
 
@@ -174,7 +217,10 @@ const handleSetUsername = (io, socket) => ({ roomId, username }) => {
   }
 };
 
-const handleSendMessage = (io, socket) => ({ roomId, message }) => {
+const handleSendMessage = (io, socket) => ({ roomId, message: rawMessage }) => {
+  const message = asText(rawMessage, MAX_MESSAGE_LENGTH);
+  if (!message || !socket.rooms.has(roomId)) return;
+
   if (activeRooms.has(roomId)) {
     const room = activeRooms.get(roomId);
     const user = room.users.get(socket.id);
