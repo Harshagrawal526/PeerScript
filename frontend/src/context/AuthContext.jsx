@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../utils/api';
+import { sessionStore } from '../utils/storage';
 const AuthContext = createContext();
 
 // eslint-disable-next-line react-refresh/only-export-components -- hook lives with its provider; only costs HMR granularity
@@ -20,7 +21,7 @@ export const AuthProvider = ({ children }) => {
   // Check if user is logged in on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const storedToken = sessionStorage.getItem('token');
+      const storedToken = sessionStore.get('token');
       
       if (storedToken) {
         try {
@@ -31,13 +32,13 @@ export const AuthProvider = ({ children }) => {
             setToken(storedToken);
           } else {
             // Token invalid, clear it
-            sessionStorage.removeItem('token');
+            sessionStore.remove('token');
             setUser(null);
             setToken(null);
           }
         } catch (error) {
           console.error('Auth check error:', error);
-          sessionStorage.removeItem('token');
+          sessionStore.remove('token');
           setUser(null);
           setToken(null);
         }
@@ -57,7 +58,7 @@ export const AuthProvider = ({ children }) => {
       if (ok) {
         setUser(data.user);
         setToken(data.token);
-        sessionStorage.setItem('token', data.token);
+        sessionStore.set('token', data.token);
         return { success: true };
       } else {
         return {
@@ -78,7 +79,7 @@ export const AuthProvider = ({ children }) => {
       if (ok) {
         setUser(data.user);
         setToken(data.token);
-        sessionStorage.setItem('token', data.token);
+        sessionStore.set('token', data.token);
         return { success: true };
       } else {
         return {
@@ -95,7 +96,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    sessionStorage.removeItem('token');
+    sessionStore.remove('token');
   };
 
   return (
