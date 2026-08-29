@@ -79,6 +79,12 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/rooms', require('./routes/rooms'));
 
+// Unknown API paths should read as missing, not fall through to the SPA's
+// generic failure handling.
+app.use('/api', (req, res) => {
+  res.status(404).json({ success: false, message: 'Not found' });
+});
+
 app.use(require('./middleware/errorHandler'));
 
 // Socket authentication middleware

@@ -1,6 +1,15 @@
 const Room = require('../models/Room');
 const { generateRoomId } = require('../utils/helpers');
 
+// The schema allows a room with no creator, so ownership checks have to cope
+// with one; dereferencing it blindly turned a 403 into a 500. Handles the
+// creator field whether or not it has been populated.
+const isCreator = (room, userId) => {
+  if (!room.creator || !userId) return false;
+  const creatorId = room.creator._id || room.creator;
+  return creatorId.toString() === userId;
+};
+
 const nextUntitledName = async (creatorId) => {
   const untitledRooms = await Room.find({
     creator: creatorId,
@@ -78,7 +87,7 @@ exports.getRoom = async (req, res) => {
     });
   }
 
-  if (!room.isPublic && (!req.user || room.creator._id.toString() !== req.user.id)) {
+  if (!room.isPublic && !isCreator(room, req.user && req.user.id)) {
     return res.status(403).json({
       success: false,
       message: 'This room is private'
@@ -113,7 +122,7 @@ exports.updateRoom = async (req, res) => {
     });
   }
 
-  if (room.creator.toString() !== req.user.id) {
+  if (!isCreator(room, req.user.id)) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to update this room'
@@ -146,7 +155,7 @@ exports.deleteRoom = async (req, res) => {
     });
   }
 
-  if (room.creator.toString() !== req.user.id) {
+  if (!isCreator(room, req.user.id)) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to delete this room'
