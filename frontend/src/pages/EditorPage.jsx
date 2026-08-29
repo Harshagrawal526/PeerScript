@@ -8,10 +8,10 @@ import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import { useCollab } from '../hooks/useCollab';
 import { api } from '../utils/api';
-import { buildPreviewDoc } from '../utils/previewDoc';
 import OutputPanel from '../components/preview/OutputPanel';
 import { usePreviewConsole } from '../hooks/usePreviewConsole';
 import { useResizablePane } from '../hooks/useResizablePane';
+import { useLivePreview } from '../hooks/useLivePreview';
 
 function EditorPage() {
   const { token, user } = useAuth();
@@ -19,10 +19,6 @@ function EditorPage() {
   const navigate = useNavigate();
   const roomId = searchParams.get('room');
 
-  const [html, setHtml] = useState('');
-  const [css, setCss] = useState('');
-  const [js, setJs] = useState('');
-  const [srcDoc, setSrcDoc] = useState('');
   const [usersCount, setUsersCount] = useState(1);
   const [accessDenied, setAccessDenied] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -38,6 +34,10 @@ function EditorPage() {
 
   // Shared Yjs document + cursor presence for this room
   const collab = useCollab(socket, roomId, user?.username || 'Anonymous');
+
+  // Each rebuild re-runs the room's code, so the previous run's output no
+  // longer describes what is on screen.
+  const { html, css, js, srcDoc } = useLivePreview(collab, clearLogs);
 
   useEffect(() => {
     const fetchRoomDetails = async () => {
@@ -90,29 +90,6 @@ function EditorPage() {
     };
   }, [socket, roomId]);
 
-  // Mirror the shared Y.Texts into React state for the live preview and export
-  useEffect(() => {
-    if (!collab) return;
-
-    const { ytexts } = collab;
-    const sync = () => {
-      setHtml(ytexts.html.toString());
-      setCss(ytexts.css.toString());
-      setJs(ytexts.js.toString());
-    };
-
-    sync();
-    ytexts.html.observe(sync);
-    ytexts.css.observe(sync);
-    ytexts.js.observe(sync);
-
-    return () => {
-      ytexts.html.unobserve(sync);
-      ytexts.css.unobserve(sync);
-      ytexts.js.unobserve(sync);
-    };
-  }, [collab]);
-
   useEffect(() => {
     if (!socket) return;
 
@@ -140,17 +117,6 @@ function EditorPage() {
       socket.off('yjs-sync', onSynced);
     };
   }, [socket]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      // Each rebuild re-runs the room's code, so the previous run's output
-      // no longer describes what is on screen.
-      clearLogs();
-      setSrcDoc(buildPreviewDoc({ html, css, js }));
-    }, 250);
-
-    return () => clearTimeout(timeout);
-  }, [html, css, js, clearLogs]);
 
   if (accessDenied) {
     return (
