@@ -12,7 +12,7 @@ import { usePreviewConsole } from '../hooks/usePreviewConsole';
 import { useResizablePane } from '../hooks/useResizablePane';
 import { useLivePreview } from '../hooks/useLivePreview';
 import { useRoomSession } from '../hooks/useRoomSession';
-import RoomNotice from '../components/room/RoomNotice';
+import Notice from '../components/ui/Notice';
 
 function EditorPage() {
   const { token, user } = useAuth();
@@ -63,7 +63,7 @@ function EditorPage() {
 
   if (accessDenied) {
     return (
-      <RoomNotice
+      <Notice
         title="This room is private"
         titleClassName="text-red-600"
         message="Only the room's creator can open it. If this is your room, log in first."
@@ -74,13 +74,13 @@ function EditorPage() {
         <Link to="/" className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300">
           Go to Home
         </Link>
-      </RoomNotice>
+      </Notice>
     );
   }
 
   if (!roomId) {
     return (
-      <RoomNotice
+      <Notice
         title="No Room Selected"
         titleClassName="text-orange-600"
         message="Please create or join a room from the home page"
@@ -88,7 +88,7 @@ function EditorPage() {
         <Link to="/" className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600">
           Go to Home
         </Link>
-      </RoomNotice>
+      </Notice>
     );
   }
 

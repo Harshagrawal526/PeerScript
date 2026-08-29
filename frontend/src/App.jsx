@@ -10,6 +10,7 @@ const About = lazy(() => import('./pages/About'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const Loader = () => (
   <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
   { path: '/login', element: page(<Login />) },
   { path: '/register', element: page(<Register />) },
   { path: '/dashboard', element: page(<Dashboard />) },
+  { path: '*', element: page(<NotFound />) },
 ]);
 
 function App() {
