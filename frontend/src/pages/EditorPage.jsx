@@ -8,6 +8,7 @@ import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import { useCollab } from '../hooks/useCollab';
 import { api } from '../utils/api';
+import { buildPreviewDoc } from '../utils/previewDoc';
 
 function EditorPage() {
   const { token, user } = useAuth();
@@ -193,13 +194,7 @@ function EditorPage() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setSrcDoc(`
-        <html>
-          <body>${html}</body>
-          <style>${css}</style>
-          <script>${js}</script>
-        </html>
-      `);
+      setSrcDoc(buildPreviewDoc({ html, css, js }));
     }, 250);
 
     return () => clearTimeout(timeout);
