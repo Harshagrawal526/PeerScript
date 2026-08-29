@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Editor from '../components/editor/Editor';
@@ -11,6 +11,7 @@ import { api } from '../utils/api';
 import { buildPreviewDoc } from '../utils/previewDoc';
 import OutputPanel from '../components/preview/OutputPanel';
 import { usePreviewConsole } from '../hooks/usePreviewConsole';
+import { useResizablePane } from '../hooks/useResizablePane';
 
 function EditorPage() {
   const { token, user } = useAuth();
@@ -26,23 +27,17 @@ function EditorPage() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatWidth, setChatWidth] = useState(320);
-  const [editorHeight, setEditorHeight] = useState(50);
-  const [isResizing, setIsResizing] = useState(false);
   const [roomName, setRoomName] = useState('');
 
-  const containerRef = useRef(null);
-  const frameRef = useRef(null);
   const iframeRef = useRef(null);
   const { socket, connected } = useSocket();
+
+  const { containerRef, paneHeight: editorHeight, startResize } = useResizablePane(50);
 
   const { logs, clearLogs } = usePreviewConsole(iframeRef);
 
   // Shared Yjs document + cursor presence for this room
   const collab = useCollab(socket, roomId, user?.username || 'Anonymous');
-
-  const HEADER_HEIGHT = 53;
-  const MIN_HEIGHT = 5;
-  const MAX_HEIGHT = 95;
 
   useEffect(() => {
     const fetchRoomDetails = async () => {
@@ -81,57 +76,6 @@ function EditorPage() {
 
   const toggleChat = () => {
     setIsChatOpen(prev => !prev);
-  };
-
-  const handleMouseMove = useCallback((e) => {
-    if (!isResizing || !containerRef.current) return;
-
-    if (frameRef.current) {
-      cancelAnimationFrame(frameRef.current);
-    }
-
-    frameRef.current = requestAnimationFrame(() => {
-      const container = containerRef.current;
-      const rect = container.getBoundingClientRect();
-      const totalHeight = rect.height;
-      const mouseY = e.clientY - rect.top;
-
-      let newEditorHeight = (mouseY / totalHeight) * 100;
-      newEditorHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, newEditorHeight));
-
-      setEditorHeight(newEditorHeight);
-    });
-  }, [isResizing]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsResizing(false);
-    document.body.classList.remove('resizing');
-
-    if (frameRef.current) {
-      cancelAnimationFrame(frameRef.current);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isResizing) {
-      document.body.classList.add('resizing');
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.classList.remove('resizing');
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
-    };
-  }, [isResizing, handleMouseMove, handleMouseUp]);
-
-  const handleResizeStart = (e) => {
-    e.preventDefault();
-    setIsResizing(true);
   };
 
   useEffect(() => {
@@ -274,7 +218,7 @@ function EditorPage() {
         </div>
 
         <div
-          onMouseDown={handleResizeStart}
+          onMouseDown={startResize}
           className="resize-handle h-1.5 bg-gradient-to-r from-blue-500 to-purple-600 cursor-ns-resize hover:h-2.5 transition-all relative flex-shrink-0 group"
         >
           <div className="absolute inset-0 flex items-center justify-center">
