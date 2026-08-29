@@ -22,7 +22,7 @@ function About() {
               students, and teams who want to code together seamlessly.
             </p>
             <p className="text-lg text-gray-700 leading-relaxed">
-              Whether you're pair programming, teaching, or working on a group project,
+              Whether you&apos;re pair programming, teaching, or working on a group project,
               PeerScript makes collaboration effortless with instant synchronization and
               live preview functionality.
             </p>

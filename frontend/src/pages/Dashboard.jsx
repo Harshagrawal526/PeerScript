@@ -248,7 +248,7 @@ const [renaming, setRenaming] = useState(false);
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
               autoFocus
             />
-            <p className="text-xs text-gray-500 mt-1">Leave empty for "Untitled Project"</p>
+            <p className="text-xs text-gray-500 mt-1">Leave empty for &quot;Untitled Project&quot;</p>
           </div>
 
           <div className="flex gap-2">
