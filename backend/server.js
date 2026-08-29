@@ -7,6 +7,17 @@ const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+// Fail at boot rather than at the first login. A missing JWT_SECRET or
+// JWT_EXPIRE makes jwt.sign throw, which would otherwise surface as a 500 on
+// register and login while every other route looked healthy.
+const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'JWT_EXPIRE'];
+const missingEnv = REQUIRED_ENV.filter((name) => !process.env[name]);
+
+if (missingEnv.length > 0) {
+  console.error(`Missing required environment variable(s): ${missingEnv.join(', ')}`);
+  process.exit(1);
+}
+
 const socketAuthMiddleware = require('./middleware/socketAuth');
 
 const {
