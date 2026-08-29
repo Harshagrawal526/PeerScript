@@ -133,9 +133,9 @@ function EditorPage() {
           className="flex bg-blue-100/50 border-b-2 border-blue-200 overflow-hidden"
           style={{ height: `${editorHeight}%` }}
         >
-          <Editor language="html" displayName="HTML" ytext={collab?.ytexts.html} awareness={collab?.awareness} />
-          <Editor language="css" displayName="CSS" ytext={collab?.ytexts.css} awareness={collab?.awareness} />
-          <Editor language="js" displayName="JS" ytext={collab?.ytexts.js} awareness={collab?.awareness} />
+          <Editor language="html" ytext={collab?.ytexts.html} awareness={collab?.awareness} />
+          <Editor language="css" ytext={collab?.ytexts.css} awareness={collab?.awareness} />
+          <Editor language="js" ytext={collab?.ytexts.js} awareness={collab?.awareness} />
         </div>
 
         <div
