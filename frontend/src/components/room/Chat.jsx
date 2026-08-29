@@ -1,5 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useDragResize } from '../../hooks/useDragResize';
+
+const MIN_WIDTH_PERCENT = 0.10;
+const MAX_WIDTH_PERCENT = 0.35;
+
+// The panel is anchored to the right edge, so its width is the distance from
+// the pointer to that edge.
+const measureChatWidth = (event) => window.innerWidth - event.clientX;
+const minChatWidth = () => window.innerWidth * MIN_WIDTH_PERCENT;
+const maxChatWidth = () => window.innerWidth * MAX_WIDTH_PERCENT;
 
 const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
   const [messages, setMessages] = useState([]);
@@ -7,17 +17,24 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
   const [username, setUsername] = useState('');
   const [isUsernameSet, setIsUsernameSet] = useState(false);
   const [usernameError, setUsernameError] = useState('');
-  const [chatWidth, setChatWidth] = useState(320);
-  const [isResizing, setIsResizing] = useState(false);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const chatRef = useRef(null);
-  const frameRef = useRef(null);
   
   const { isAuthenticated } = useAuth();
 
-  const MIN_WIDTH_PERCENT = 0.10;
-  const MAX_WIDTH_PERCENT = 0.35;
+  const { size: chatWidth, startResize } = useDragResize({
+    initial: 320,
+    min: minChatWidth,
+    max: maxChatWidth,
+    measure: measureChatWidth,
+    bodyClass: 'chat-resizing'
+  });
+
+  // Report the width up so the editor can leave room for the panel.
+  useEffect(() => {
+    onResize?.(chatWidth);
+  }, [chatWidth, onResize]);
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -100,55 +117,6 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     };
   }, [socket]);
 
-  // Optimized mouse move handler with RAF
-  const handleMouseMove = useCallback((e) => {
-    if (!isResizing) return;
-
-    if (frameRef.current) {
-      cancelAnimationFrame(frameRef.current);
-    }
-
-    frameRef.current = requestAnimationFrame(() => {
-      const newWidth = window.innerWidth - e.clientX;
-      const minWidth = window.innerWidth * MIN_WIDTH_PERCENT;
-      const maxWidth = window.innerWidth * MAX_WIDTH_PERCENT;
-      
-      if (newWidth >= minWidth && newWidth <= maxWidth) {
-        setChatWidth(newWidth);
-        if (onResize) {
-          onResize(newWidth);
-        }
-      }
-    });
-  }, [isResizing, onResize]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsResizing(false);
-    document.body.classList.remove('chat-resizing');
-    
-    if (frameRef.current) {
-      cancelAnimationFrame(frameRef.current);
-    }
-  }, []);
-
-  // Handle resize listeners
-  useEffect(() => {
-    if (isResizing) {
-      document.body.classList.add('chat-resizing');
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.classList.remove('chat-resizing');
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
-    };
-  }, [isResizing, handleMouseMove, handleMouseUp]);
-
   const handleSetUsername = (e) => {
     e.preventDefault();
     if (username.trim() && socket && roomId) {
@@ -176,10 +144,6 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     }
   };
 
-  const handleResizeStart = (e) => {
-    e.preventDefault();
-    setIsResizing(true);
-  };
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -199,7 +163,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     >
       {/* Resize Handle */}
       <div
-        onMouseDown={handleResizeStart}
+        onMouseDown={startResize}
         className="chat-resize-handle absolute left-0 top-0 w-1.5 h-full cursor-ew-resize hover:bg-blue-400 transition-colors group"
         style={{ marginLeft: '-3px' }}
       >

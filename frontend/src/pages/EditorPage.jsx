@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Editor from '../components/editor/Editor';
@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCollab } from '../hooks/useCollab';
 import OutputPanel from '../components/preview/OutputPanel';
 import { usePreviewConsole } from '../hooks/usePreviewConsole';
-import { useResizablePane } from '../hooks/useResizablePane';
+import { useDragResize } from '../hooks/useDragResize';
 import { useLivePreview } from '../hooks/useLivePreview';
 import { useRoomSession } from '../hooks/useRoomSession';
 import Notice from '../components/ui/Notice';
@@ -24,11 +24,25 @@ function EditorPage() {
   const [chatWidth, setChatWidth] = useState(320);
 
   const iframeRef = useRef(null);
+  const containerRef = useRef(null);
   const { socket, connected } = useSocket();
 
   const { roomName, usersCount, accessDenied } = useRoomSession(socket, roomId, token);
 
-  const { containerRef, paneHeight: editorHeight, startResize } = useResizablePane(50);
+  // The editor pane is sized as a percentage of the split container.
+  const measureEditorHeight = useCallback((event) => {
+    if (!containerRef.current) return null;
+    const rect = containerRef.current.getBoundingClientRect();
+    return ((event.clientY - rect.top) / rect.height) * 100;
+  }, []);
+
+  const { size: editorHeight, startResize } = useDragResize({
+    initial: 50,
+    min: 5,
+    max: 95,
+    measure: measureEditorHeight,
+    bodyClass: 'resizing'
+  });
 
   const { logs, clearLogs } = usePreviewConsole(iframeRef);
 
