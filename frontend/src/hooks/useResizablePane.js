@@ -31,9 +31,9 @@ export const useResizablePane = (initialHeight = 50) => {
   }, []);
 
   // Listeners live on document, not the handle, so the drag survives the
-  // pointer moving off the handle. Callers still have to keep the pointer out
-  // of any iframe below, which consumes the events before they reach us --
-  // isResizing is returned for exactly that.
+  // pointer moving off it. The .resizing class is what carries the drag over
+  // the preview: its `pointer-events: none` rule stops the iframe consuming
+  // the mousemove events, which it would otherwise do as a separate document.
   useEffect(() => {
     if (!isResizing) return;
 
