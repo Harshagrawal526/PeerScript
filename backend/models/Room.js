@@ -4,8 +4,7 @@ const RoomSchema = new mongoose.Schema({
   roomId: {
     type: String,
     required: true,
-    unique: true,
-    index: true
+    unique: true // already builds the index; a separate index: true duplicates it
   },
   name: {
     type: String,
