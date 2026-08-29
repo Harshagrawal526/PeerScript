@@ -210,10 +210,12 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex justify-between items-center">
         <h3 className="text-lg font-bold">💬 Chat</h3>
         <button
+          type="button"
           onClick={onToggle}
+          aria-label="Close chat"
           className="text-white hover:text-blue-100 transition-colors text-xl cursor-pointer"
         >
-          ✕
+          <span aria-hidden="true">✕</span>
         </button>
       </div>
 

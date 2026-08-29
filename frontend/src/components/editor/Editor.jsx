@@ -200,6 +200,7 @@ export default function Editor(props) {
                 formatted ? 'bg-green-500' : 'hover:bg-white/20'
               }`}
               onClick={handleFormat}
+              aria-label={`Format ${displayName}`}
               title={`Format ${displayName}`}
             >
               <FontAwesomeIcon icon={faMagic} />
@@ -221,6 +222,7 @@ export default function Editor(props) {
                 downloaded ? 'bg-green-500' : 'hover:bg-white/20'
               }`}
               onClick={handleDownload}
+              aria-label={`Download ${displayName}`}
               title={`Download ${displayName}`}
             >
               <FontAwesomeIcon icon={faDownload} />
@@ -229,6 +231,7 @@ export default function Editor(props) {
               type="button"
               className="text-white cursor-pointer bg-none border-none hover:bg-white/20 px-2 py-1 rounded transition-colors"
               onClick={() => setOpen(prevOpen => !prevOpen)}
+              aria-label={`${open ? 'Collapse' : 'Expand'} ${displayName} editor`}
               title={open ? 'Collapse' : 'Expand'}
             >
               <FontAwesomeIcon icon={open ? faCompressAlt : faExpandAlt} />
@@ -241,6 +244,8 @@ export default function Editor(props) {
                 type="button"
                 className="text-white cursor-pointer bg-none border-none hover:bg-white/20 px-2 py-1 rounded transition-colors"
                 onClick={() => setMenuOpen(!menuOpen)}
+                aria-label={`${displayName} editor options`}
+                aria-expanded={menuOpen}
                 title="Options"
               >
                 <FontAwesomeIcon icon={faBars} />
@@ -276,6 +281,7 @@ export default function Editor(props) {
               type="button"
               className="text-white cursor-pointer bg-none border-none hover:bg-white/20 px-2 py-1 rounded transition-colors"
               onClick={() => setOpen(true)}
+              aria-label={`Expand ${displayName} editor`}
               title="Expand"
             >
               <FontAwesomeIcon icon={faExpandAlt} />
