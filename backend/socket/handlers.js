@@ -33,7 +33,10 @@ const joinedRoomCount = (socket) => socket.rooms.size - 1;
 // In-memory active rooms: roomId -> { users, usernames, ydoc, initPromise, saveTimer, dirty }
 const activeRooms = new Map();
 
-// Seed the shared doc from MongoDB the first time a room becomes active
+// Seed the shared doc from MongoDB the first time a room becomes active.
+// Reports whether the read succeeded: an empty doc because the room is new and
+// an empty doc because the database could not be reached look identical
+// afterwards, and only one of them is safe to save.
 const loadRoomIntoDoc = async (roomId, ydoc) => {
   try {
     const dbRoom = await Room.findOne({ roomId });
@@ -47,29 +50,57 @@ const loadRoomIntoDoc = async (roomId, ydoc) => {
         });
       });
     }
+    return true;
   } catch (error) {
     console.error('Error loading room:', error);
+    return false;
   }
+};
+
+const startLoad = (room, roomId) => {
+  room.initPromise = loadRoomIntoDoc(roomId, room.ydoc).then((loaded) => {
+    room.loaded = loaded;
+  });
+  return room.initPromise;
 };
 
 const ensureRoom = (roomId) => {
   if (!activeRooms.has(roomId)) {
-    const ydoc = new Y.Doc();
-    activeRooms.set(roomId, {
+    const room = {
       users: new Map(),
       usernames: new Set(),
-      ydoc,
-      initPromise: loadRoomIntoDoc(roomId, ydoc),
+      ydoc: new Y.Doc(),
+      loaded: false,
+      initPromise: null,
       saveTimer: null,
       dirty: false
-    });
+    };
+    startLoad(room, roomId);
+    activeRooms.set(roomId, room);
   }
   return activeRooms.get(roomId);
+};
+
+// Waits for the initial read, retrying once if it failed, so a transient
+// database error does not leave the room permanently empty for its members.
+const ensureLoaded = async (roomId) => {
+  const room = activeRooms.get(roomId);
+  if (!room) return false;
+
+  await room.initPromise;
+  if (!room.loaded) await startLoad(room, roomId);
+
+  return room.loaded;
 };
 
 const persistRoom = async (roomId) => {
   const room = activeRooms.get(roomId);
   if (!room || !room.dirty) return;
+
+  // Never write back a document that was never filled from the database. The
+  // read failed, so this doc is empty for the wrong reason, and the upsert
+  // below would replace the room's saved code with nothing.
+  if (!room.loaded) return;
 
   const code = {};
   LANGUAGES.forEach((language) => {
@@ -155,7 +186,12 @@ const handleYjsRequestSync = (io, socket) => async (rawRoomId) => {
 
   socket.join(roomId);
   const room = ensureRoom(roomId);
-  await room.initPromise;
+
+  if (!(await ensureLoaded(roomId))) {
+    socket.emit('room-unavailable');
+    return;
+  }
+
   socket.emit('yjs-sync', Y.encodeStateAsUpdate(room.ydoc));
 };
 

@@ -7,6 +7,7 @@ export const useRoomSession = (socket, roomId, token) => {
   const [roomName, setRoomName] = useState('');
   const [usersCount, setUsersCount] = useState(1);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     if (!roomId) return;
@@ -38,10 +39,19 @@ export const useRoomSession = (socket, roomId, token) => {
     // Private-room gate: the server refuses join/sync for non-creators, and a
     // later successful sync clears it (e.g. after logging in as the creator).
     const onDenied = () => setAccessDenied(true);
-    const onSynced = () => setAccessDenied(false);
+
+    // The server could not read the room, so it is withholding the document
+    // rather than serving an empty one that would overwrite the saved code.
+    const onUnavailable = () => setUnavailable(true);
+
+    const onSynced = () => {
+      setAccessDenied(false);
+      setUnavailable(false);
+    };
 
     socket.on('users-in-room', onUsersInRoom);
     socket.on('room-access-denied', onDenied);
+    socket.on('room-unavailable', onUnavailable);
     socket.on('yjs-sync', onSynced);
 
     return () => {
@@ -49,9 +59,10 @@ export const useRoomSession = (socket, roomId, token) => {
       // remove listeners other parts of the app registered for it.
       socket.off('users-in-room', onUsersInRoom);
       socket.off('room-access-denied', onDenied);
+      socket.off('room-unavailable', onUnavailable);
       socket.off('yjs-sync', onSynced);
     };
   }, [socket]);
 
-  return { roomName, usersCount, accessDenied };
+  return { roomName, usersCount, accessDenied, unavailable };
 };
