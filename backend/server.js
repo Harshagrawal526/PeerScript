@@ -101,16 +101,27 @@ app.use(require('./middleware/errorHandler'));
 // Socket authentication middleware
 io.use(socketAuthMiddleware);
 
-// Socket.io connection handling
+// Socket.io does not catch rejections thrown by async listeners, and an
+// unhandled rejection terminates the process by default. A database blip
+// while one client joins should drop that event, not the server and every
+// other room on it.
+const guard = (handler) => async (...args) => {
+  try {
+    await handler(...args);
+  } catch (error) {
+    console.error('Socket handler error:', error);
+  }
+};
+
 io.on('connection', (socket) => {
-  socket.on('join-room', handleJoinRoom(io, socket));
-  socket.on('leave-room', handleLeaveRoom(io, socket));
-  socket.on('yjs-request-sync', handleYjsRequestSync(io, socket));
-  socket.on('yjs-update', handleYjsUpdate(io, socket));
-  socket.on('yjs-awareness', handleYjsAwareness(io, socket));
-  socket.on('set-username', handleSetUsername(io, socket));
-  socket.on('send-message', handleSendMessage(io, socket));
-  socket.on('disconnect', handleDisconnect(io, socket));
+  socket.on('join-room', guard(handleJoinRoom(io, socket)));
+  socket.on('leave-room', guard(handleLeaveRoom(io, socket)));
+  socket.on('yjs-request-sync', guard(handleYjsRequestSync(io, socket)));
+  socket.on('yjs-update', guard(handleYjsUpdate(io, socket)));
+  socket.on('yjs-awareness', guard(handleYjsAwareness(io, socket)));
+  socket.on('set-username', guard(handleSetUsername(io, socket)));
+  socket.on('send-message', guard(handleSendMessage(io, socket)));
+  socket.on('disconnect', guard(handleDisconnect(io, socket)));
 });
 
 const PORT = process.env.PORT || 3001;
