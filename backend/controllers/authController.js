@@ -77,15 +77,14 @@ exports.login = async (req, res) => {
 // @route   GET /api/auth/me
 // @desc    Get current logged in user
 // @access  Private
+// protect has already loaded the user, so there is nothing to fetch here.
 exports.getMe = async (req, res) => {
-  const user = await User.findById(req.user.id);
-
   res.json({
     success: true,
     user: {
-      id: user._id,
-      username: user.username,
-      email: user.email
+      id: req.user._id,
+      username: req.user.username,
+      email: req.user.email
     }
   });
 };

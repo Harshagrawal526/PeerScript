@@ -12,7 +12,6 @@ export const useSocket = () => {
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [connecting, setConnecting] = useState(true);
   const { token } = useAuth();
 
   useEffect(() => {
@@ -23,18 +22,12 @@ export const SocketProvider = ({ children }) => {
       }
     });
 
-    newSocket.on('connect', () => {
-      setConnected(true);
-      setConnecting(false);
-    });
+    newSocket.on('connect', () => setConnected(true));
 
-    newSocket.on('disconnect', () => {
-      setConnected(false);
-    });
+    newSocket.on('disconnect', () => setConnected(false));
 
     newSocket.on('connect_error', (error) => {
       console.error('Connection error:', error);
-      setConnecting(false);
     });
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- socket must live in state so consumers re-render when it is (re)created
@@ -44,7 +37,7 @@ export const SocketProvider = ({ children }) => {
   }, [token]); // Reconnect when the auth token changes
 
   return (
-    <SocketContext.Provider value={{ socket, connected, connecting }}>
+    <SocketContext.Provider value={{ socket, connected }}>
       {children}
     </SocketContext.Provider>
   );
