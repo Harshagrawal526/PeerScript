@@ -27,7 +27,7 @@ function EditorPage() {
   const containerRef = useRef(null);
   const { socket, connected } = useSocket();
 
-  const { roomName, usersCount, accessDenied } = useRoomSession(socket, roomId, token);
+  const { roomName, usersCount, accessDenied, unavailable } = useRoomSession(socket, roomId, token);
 
   // The editor pane is sized as a percentage of the split container.
   const measureEditorHeight = useCallback((event) => {
@@ -74,6 +74,27 @@ function EditorPage() {
   const toggleChat = () => {
     setIsChatOpen(prev => !prev);
   };
+
+  if (unavailable) {
+    return (
+      <Notice
+        title="This room can't be opened right now"
+        titleClassName="text-amber-600"
+        message="The server could not load this room's saved code, so it is not showing an empty editor that could overwrite it. Please try again in a moment."
+      >
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer"
+        >
+          Retry
+        </button>
+        <Link to="/" className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300">
+          Go to Home
+        </Link>
+      </Notice>
+    );
+  }
 
   if (accessDenied) {
     return (
