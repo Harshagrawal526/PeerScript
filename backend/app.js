@@ -1,7 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import authRoutes from './routes/auth.js';
+import roomRoutes from './routes/rooms.js';
+import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
 
@@ -48,13 +51,13 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/rooms', require('./routes/rooms'));
+app.use('/api/auth', authRoutes);
+app.use('/api/rooms', roomRoutes);
 
 app.use('/api', (req, res) => {
   res.status(404).json({ success: false, message: 'Not found' });
 });
 
-app.use(require('./middleware/errorHandler'));
+app.use(errorHandler);
 
-module.exports = app;
+export default app;

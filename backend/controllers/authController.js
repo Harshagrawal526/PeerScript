@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -8,7 +8,7 @@ const generateToken = (id) => {
 };
 
 // POST /api/auth/register
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   const { username, email, password } = req.body;
 
   let user = await User.findOne({ $or: [{ email }, { username }] });
@@ -36,7 +36,7 @@ exports.register = async (req, res) => {
 };
 
 // POST /api/auth/login
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email }).select('+password');
@@ -72,7 +72,7 @@ exports.login = async (req, res) => {
 
 // GET /api/auth/me
 // protect has already loaded the user, so there is nothing to fetch here.
-exports.getMe = async (req, res) => {
+export const getMe = async (req, res) => {
   res.json({
     success: true,
     user: {

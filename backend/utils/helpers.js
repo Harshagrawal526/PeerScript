@@ -1,8 +1,8 @@
-const crypto = require('crypto');
+import crypto from 'node:crypto';
 
 // Generate a unique, unguessable room ID
 const generateRoomId = () => crypto.randomUUID();
 
-module.exports = {
+export {
   generateRoomId
 };

@@ -1,14 +1,14 @@
-const express = require('express');
-const { body } = require('express-validator');
-const { protect, optionalAuth } = require('../middleware/auth');
-const validateRequest = require('../middleware/validateRequest');
-const {
+import express from 'express';
+import { body } from 'express-validator';
+import { protect, optionalAuth } from '../middleware/auth.js';
+import validateRequest from '../middleware/validateRequest.js';
+import {
   createRoom,
   getMyRooms,
   getRoom,
   updateRoom,
   deleteRoom
-} = require('../controllers/roomController');
+} from '../controllers/roomController.js';
 
 const router = express.Router();
 
@@ -45,4 +45,4 @@ router.put(
 
 router.delete('/:roomId', protect, deleteRoom);
 
-module.exports = router;
+export default router;

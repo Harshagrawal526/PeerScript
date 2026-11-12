@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const RoomSchema = new mongoose.Schema({
   roomId: {
@@ -48,4 +48,4 @@ RoomSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('Room', RoomSchema);
+export default mongoose.model('Room', RoomSchema);

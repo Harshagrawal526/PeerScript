@@ -1,11 +1,11 @@
-const http = require('http');
-const { Server } = require('socket.io');
-const mongoose = require('mongoose');
-require('dotenv').config();
+import http from 'node:http';
+import { Server } from 'socket.io';
+import mongoose from 'mongoose';
+import 'dotenv/config';
 
-const app = require('./app');
-const socketAuthMiddleware = require('./middleware/socketAuth');
-const {
+import app from './app.js';
+import socketAuthMiddleware from './middleware/socketAuth.js';
+import {
   handleJoinRoom,
   handleLeaveRoom,
   handleDisconnect,
@@ -14,7 +14,7 @@ const {
   handleYjsRequestSync,
   handleYjsUpdate,
   handleYjsAwareness
-} = require('./socket/handlers');
+} from './socket/handlers.js';
 
 // Without these, jwt.sign throws on the first login rather than at startup.
 const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'JWT_EXPIRE'];

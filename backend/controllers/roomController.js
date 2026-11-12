@@ -1,5 +1,5 @@
-const Room = require('../models/Room');
-const { generateRoomId } = require('../utils/helpers');
+import Room from '../models/Room.js';
+import { generateRoomId } from '../utils/helpers.js';
 
 // The schema allows a room with no creator, so ownership checks have to cope
 // with one; dereferencing it blindly turned a 403 into a 500. Handles the
@@ -32,7 +32,7 @@ const nextUntitledName = async (creatorId) => {
 };
 
 // POST /api/rooms
-exports.createRoom = async (req, res) => {
+export const createRoom = async (req, res) => {
   const roomId = generateRoomId();
   let { name, isPublic = true } = req.body;
 
@@ -61,7 +61,7 @@ exports.createRoom = async (req, res) => {
 };
 
 // GET /api/rooms/my-rooms
-exports.getMyRooms = async (req, res) => {
+export const getMyRooms = async (req, res) => {
   const rooms = await Room.find({ creator: req.user.id })
     .select('roomId name isPublic lastModified createdAt')
     .sort({ lastModified: -1 });
@@ -70,7 +70,7 @@ exports.getMyRooms = async (req, res) => {
 };
 
 // GET /api/rooms/:roomId
-exports.getRoom = async (req, res) => {
+export const getRoom = async (req, res) => {
   const room = await Room.findOne({ roomId: req.params.roomId })
     .populate('creator', 'username');
 
@@ -104,7 +104,7 @@ exports.getRoom = async (req, res) => {
 };
 
 // PUT /api/rooms/:roomId
-exports.updateRoom = async (req, res) => {
+export const updateRoom = async (req, res) => {
   const room = await Room.findOne({ roomId: req.params.roomId });
 
   if (!room) {
@@ -135,7 +135,7 @@ exports.updateRoom = async (req, res) => {
 };
 
 // DELETE /api/rooms/:roomId
-exports.deleteRoom = async (req, res) => {
+export const deleteRoom = async (req, res) => {
   const room = await Room.findOne({ roomId: req.params.roomId });
 
   if (!room) {

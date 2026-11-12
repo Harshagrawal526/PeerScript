@@ -1,5 +1,5 @@
-const Y = require('yjs');
-const Room = require('../models/Room');
+import * as Y from 'yjs';
+import Room from '../models/Room.js';
 
 const LANGUAGES = ['html', 'css', 'js'];
 const SAVE_DEBOUNCE_MS = 2000;
@@ -315,7 +315,7 @@ const handleUserLeave = (io, socketId, roomId) => {
   }
 };
 
-module.exports = {
+export {
   handleJoinRoom,
   handleLeaveRoom,
   handleDisconnect,
