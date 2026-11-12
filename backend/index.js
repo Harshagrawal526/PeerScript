@@ -16,15 +16,6 @@ import {
   handleYjsAwareness
 } from './socket/handlers.js';
 
-// Without these, jwt.sign throws on the first login rather than at startup.
-const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'JWT_EXPIRE'];
-const missingEnv = REQUIRED_ENV.filter((name) => !process.env[name]);
-
-if (missingEnv.length > 0) {
-  console.error(`Missing required environment variable(s): ${missingEnv.join(', ')}`);
-  process.exit(1);
-}
-
 const server = http.createServer(app);
 const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173')
   .split(',')
