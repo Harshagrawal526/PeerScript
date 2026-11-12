@@ -1,0 +1,19 @@
+# Dependencies
+**/node_modules/
+
+# Generated output
+**/dist/
+**/build/
+**/coverage/
+**/.next/
+**/.vite/
+
+# Generated dependency lockfiles
+**/package-lock.json
+
+# Local environment files
+**/.env
+**/.env.*
+
+# Logs
+**/*.log

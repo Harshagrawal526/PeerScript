@@ -10,7 +10,16 @@
     "dev:backend": "cd backend && npm run dev",
     "build:frontend": "cd frontend && npm run build"
   },
-  "keywords": ["react", "nodejs", "socketio", "mongodb", "collaborative-editor"],
+  "keywords": [
+    "react",
+    "nodejs",
+    "socketio",
+    "mongodb",
+    "collaborative-editor"
+  ],
   "author": "Harsh Agrawal",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "3.10.1"
+  }
 }
