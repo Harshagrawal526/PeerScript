@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
-import Button from '../components/ui/Button';
-import { generateRoomId, extractRoomIdFromInput } from '../utils/roomUtils';
-import htmlImg from '../assets/html.png';
-import cssImg from '../assets/css.png';
-import jsImg from '../assets/js.png';
-import Modal from '../components/ui/Modal';
-import { api } from '../utils/api';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
+import Button from "../components/ui/Button";
+import { generateRoomId, extractRoomIdFromInput } from "../utils/roomUtils";
+import htmlImg from "../assets/html.png";
+import cssImg from "../assets/css.png";
+import jsImg from "../assets/js.png";
+import Modal from "../components/ui/Modal";
+import { api } from "../utils/api";
 
 function Home() {
   const navigate = useNavigate();
   const { isAuthenticated, token } = useAuth();
-  const [roomId, setRoomId] = useState('');
+  const [roomId, setRoomId] = useState("");
   const [showQuickCreateModal, setShowQuickCreateModal] = useState(false);
-  const [quickRoomName, setQuickRoomName] = useState('');
+  const [quickRoomName, setQuickRoomName] = useState("");
   const [creatingQuick, setCreatingQuick] = useState(false);
 
   const quickCreateRoom = async () => {
@@ -33,14 +33,18 @@ function Home() {
     setCreatingQuick(true);
 
     try {
-      const { ok, data } = await api.post('/api/rooms', { name: quickRoomName || '' }, token);
+      const { ok, data } = await api.post(
+        "/api/rooms",
+        { name: quickRoomName || "" },
+        token,
+      );
 
       if (ok) {
         navigate(`/app?room=${data.room.roomId}`);
       }
     } catch (error) {
-      console.error('Quick create error:', error);
-      alert('Failed to create room');
+      console.error("Quick create error:", error);
+      alert("Failed to create room");
     } finally {
       setCreatingQuick(false);
     }
@@ -93,7 +97,7 @@ function Home() {
                 {/* Go to Dashboard */}
                 <div>
                   <Button
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate("/dashboard")}
                     variant="success"
                     size="lg"
                     className="w-full text-lg shadow-lg hover:shadow-xl"
@@ -153,9 +157,7 @@ function Home() {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">
-                  or
-                </span>
+                <span className="px-4 bg-white text-gray-500">or</span>
               </div>
             </div>
 
@@ -170,10 +172,15 @@ function Home() {
                   placeholder="Room ID or URL"
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
+                  onKeyPress={(e) => e.key === "Enter" && joinRoom()}
                   className="flex-1 px-4 py-3 border-2 border-blue-200 bg-white text-gray-900 placeholder-gray-500 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                 />
-                <Button onClick={joinRoom} variant="primary" size="lg" className="shadow-lg">
+                <Button
+                  onClick={joinRoom}
+                  variant="primary"
+                  size="lg"
+                  className="shadow-lg"
+                >
                   Join
                 </Button>
               </div>
@@ -188,43 +195,39 @@ function Home() {
         <section className="grid md:grid-cols-3 gap-8 max-w-6xl w-full mb-16">
           {[
             {
-              icon: '⚡',
-              title: 'Real-time Sync',
-              description: 'See changes instantly as your team codes together',
-              bgColor: 'bg-blue-50',
-              borderColor: 'border-blue-200',
-              titleColor: 'text-blue-900'
+              icon: "⚡",
+              title: "Real-time Sync",
+              description: "See changes instantly as your team codes together",
+              bgColor: "bg-blue-50",
+              borderColor: "border-blue-200",
+              titleColor: "text-blue-900",
             },
             {
-              icon: '👁️',
-              title: 'Live Preview',
-              description: 'View HTML, CSS, and JavaScript output in real-time',
-              bgColor: 'bg-purple-50',
-              borderColor: 'border-purple-200',
-              titleColor: 'text-purple-900'
+              icon: "👁️",
+              title: "Live Preview",
+              description: "View HTML, CSS, and JavaScript output in real-time",
+              bgColor: "bg-purple-50",
+              borderColor: "border-purple-200",
+              titleColor: "text-purple-900",
             },
             {
-              icon: '🔗',
-              title: 'Easy Sharing',
-              description: 'Share a link - no installation or signup required',
-              bgColor: 'bg-green-50',
-              borderColor: 'border-green-200',
-              titleColor: 'text-green-900'
-            }
+              icon: "🔗",
+              title: "Easy Sharing",
+              description: "Share a link - no installation or signup required",
+              bgColor: "bg-green-50",
+              borderColor: "border-green-200",
+              titleColor: "text-green-900",
+            },
           ].map((feature, index) => (
             <div
               key={index}
               className={`${feature.bgColor} border ${feature.borderColor} rounded-xl p-6 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300`}
             >
-              <div className="text-5xl mb-4">
-                {feature.icon}
-              </div>
+              <div className="text-5xl mb-4">{feature.icon}</div>
               <h3 className={`text-xl font-bold mb-2 ${feature.titleColor}`}>
                 {feature.title}
               </h3>
-              <p className="text-gray-700">
-                {feature.description}
-              </p>
+              <p className="text-gray-700">{feature.description}</p>
             </div>
           ))}
         </section>
@@ -236,11 +239,14 @@ function Home() {
           </h2>
           <div className="flex justify-around items-center flex-wrap gap-8">
             {[
-              { img: htmlImg, name: 'HTML', color: 'text-orange-600' },
-              { img: cssImg, name: 'CSS', color: 'text-blue-600' },
-              { img: jsImg, name: 'JavaScript', color: 'text-yellow-600' }
+              { img: htmlImg, name: "HTML", color: "text-orange-600" },
+              { img: cssImg, name: "CSS", color: "text-blue-600" },
+              { img: jsImg, name: "JavaScript", color: "text-yellow-600" },
             ].map((lang, index) => (
-              <div key={index} className="text-center transform hover:scale-110 transition-transform duration-300">
+              <div
+                key={index}
+                className="text-center transform hover:scale-110 transition-transform duration-300"
+              >
                 <div className="bg-white p-6 rounded-xl shadow-lg mb-3 border-2 border-blue-200 hover:border-blue-400 transition-colors">
                   <img
                     src={lang.img}
@@ -248,7 +254,9 @@ function Home() {
                     className="h-20 w-20 mx-auto object-contain"
                   />
                 </div>
-                <p className={`text-lg font-semibold ${lang.color}`}>{lang.name}</p>
+                <p className={`text-lg font-semibold ${lang.color}`}>
+                  {lang.name}
+                </p>
               </div>
             ))}
           </div>
@@ -258,52 +266,54 @@ function Home() {
       <Footer />
 
       {/* Quick Create Room Modal */}
-<Modal
-  isOpen={showQuickCreateModal}
-  onClose={() => {
-    setShowQuickCreateModal(false);
-    setQuickRoomName('');
-  }}
-  title="Quick Start - New Room"
->
-  <form onSubmit={handleQuickCreate} className="space-y-4">
-    <div>
-      <label className="block text-gray-700 font-semibold mb-2">
-        Room Name (Optional)
-      </label>
-      <input
-        type="text"
-        value={quickRoomName}
-        onChange={(e) => setQuickRoomName(e.target.value)}
-        placeholder="Leave empty for auto-numbering"
-        maxLength={50}
-        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-        autoFocus
-      />
-      <p className="text-xs text-gray-500 mt-1">Leave empty for &quot;Untitled Project N&quot;</p>
-    </div>
-
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={() => {
+      <Modal
+        isOpen={showQuickCreateModal}
+        onClose={() => {
           setShowQuickCreateModal(false);
-          setQuickRoomName('');
+          setQuickRoomName("");
         }}
-        className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+        title="Quick Start - New Room"
       >
-        Cancel
-      </button>
-      <button
-        type="submit"
-        disabled={creatingQuick}
-        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-      >
-        {creatingQuick ? 'Creating...' : 'Create'}
-      </button>
-    </div>
-  </form>
-</Modal>
+        <form onSubmit={handleQuickCreate} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Room Name (Optional)
+            </label>
+            <input
+              type="text"
+              value={quickRoomName}
+              onChange={(e) => setQuickRoomName(e.target.value)}
+              placeholder="Leave empty for auto-numbering"
+              maxLength={50}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              autoFocus
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Leave empty for &quot;Untitled Project N&quot;
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowQuickCreateModal(false);
+                setQuickRoomName("");
+              }}
+              className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={creatingQuick}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              {creatingQuick ? "Creating..." : "Create"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { LANGUAGES } from '../utils/languages';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { LANGUAGES } from "../utils/languages";
 
 const CONFIRMATION_MS = 2000;
 
@@ -18,16 +18,21 @@ export const useEditorActions = (ytext, language) => {
     timeoutRef.current = setTimeout(() => setStatus(null), CONFIRMATION_MS);
   }, []);
 
-  const getValue = useCallback(() => (ytext ? ytext.toString() : ''), [ytext]);
+  const getValue = useCallback(() => (ytext ? ytext.toString() : ""), [ytext]);
 
-  const { label, extension, mimeType, format: formatCode } = LANGUAGES[language];
+  const {
+    label,
+    extension,
+    mimeType,
+    format: formatCode,
+  } = LANGUAGES[language];
 
   const copy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(getValue());
-      confirm('copied');
+      confirm("copied");
     } catch (error) {
-      console.error('Failed to copy:', error);
+      console.error("Failed to copy:", error);
     }
   }, [getValue, confirm]);
 
@@ -39,7 +44,7 @@ export const useEditorActions = (ytext, language) => {
     }
 
     const url = URL.createObjectURL(new Blob([value], { type: mimeType }));
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = `code.${extension}`;
     document.body.appendChild(link);
@@ -47,7 +52,7 @@ export const useEditorActions = (ytext, language) => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    confirm('downloaded');
+    confirm("downloaded");
   }, [getValue, confirm, label, extension, mimeType]);
 
   const format = useCallback(() => {
@@ -66,7 +71,7 @@ export const useEditorActions = (ytext, language) => {
         ytext.insert(0, formatted);
       });
 
-      confirm('formatted');
+      confirm("formatted");
     } catch (error) {
       alert(`Error formatting ${label}: ${error.message}`);
     }

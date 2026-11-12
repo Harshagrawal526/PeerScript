@@ -1,24 +1,24 @@
-import React, { useCallback, useState, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import Editor from '../components/editor/Editor';
-import RoomHeader from '../components/room/RoomHeader';
-import Chat from '../components/room/Chat';
-import { useSocket } from '../context/SocketContext';
-import { useAuth } from '../context/AuthContext';
-import { useCollab } from '../hooks/useCollab';
-import OutputPanel from '../components/preview/OutputPanel';
-import { usePreviewConsole } from '../hooks/usePreviewConsole';
-import { useDragResize } from '../hooks/useDragResize';
-import { useLivePreview } from '../hooks/useLivePreview';
-import { useRoomSession } from '../hooks/useRoomSession';
-import Notice from '../components/ui/Notice';
+import React, { useCallback, useState, useRef } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import Editor from "../components/editor/Editor";
+import RoomHeader from "../components/room/RoomHeader";
+import Chat from "../components/room/Chat";
+import { useSocket } from "../context/SocketContext";
+import { useAuth } from "../context/AuthContext";
+import { useCollab } from "../hooks/useCollab";
+import OutputPanel from "../components/preview/OutputPanel";
+import { usePreviewConsole } from "../hooks/usePreviewConsole";
+import { useDragResize } from "../hooks/useDragResize";
+import { useLivePreview } from "../hooks/useLivePreview";
+import { useRoomSession } from "../hooks/useRoomSession";
+import Notice from "../components/ui/Notice";
 
 function EditorPage() {
   const { token, user } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const roomId = searchParams.get('room');
+  const roomId = searchParams.get("room");
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatWidth, setChatWidth] = useState(320);
@@ -27,7 +27,11 @@ function EditorPage() {
   const containerRef = useRef(null);
   const { socket, connected } = useSocket();
 
-  const { roomName, usersCount, accessDenied, unavailable } = useRoomSession(socket, roomId, token);
+  const { roomName, usersCount, accessDenied, unavailable } = useRoomSession(
+    socket,
+    roomId,
+    token,
+  );
 
   // The editor pane is sized as a percentage of the split container.
   const measureEditorHeight = useCallback((event) => {
@@ -41,19 +45,23 @@ function EditorPage() {
     min: 5,
     max: 95,
     measure: measureEditorHeight,
-    bodyClass: 'resizing'
+    bodyClass: "resizing",
   });
 
   const { logs, clearLogs } = usePreviewConsole(iframeRef);
 
-  const collab = useCollab(socket, roomId, user?.username || 'Anonymous');
+  const collab = useCollab(socket, roomId, user?.username || "Anonymous");
 
   // Each rebuild re-runs the code, so the previous run's output is stale.
   const { html, css, js, srcDoc } = useLivePreview(collab, clearLogs);
 
   const clearCode = () => {
     if (!collab) return;
-    if (window.confirm('Are you sure you want to clear all code? This will affect all users in the room.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to clear all code? This will affect all users in the room.",
+      )
+    ) {
       collab.ydoc.transact(() => {
         Object.values(collab.ytexts).forEach((ytext) => {
           ytext.delete(0, ytext.length);
@@ -64,13 +72,13 @@ function EditorPage() {
 
   const leaveRoom = () => {
     if (socket && roomId) {
-      socket.emit('leave-room', roomId);
+      socket.emit("leave-room", roomId);
     }
-    navigate('/');
+    navigate("/");
   };
 
   const toggleChat = () => {
-    setIsChatOpen(prev => !prev);
+    setIsChatOpen((prev) => !prev);
   };
 
   if (unavailable) {
@@ -87,7 +95,10 @@ function EditorPage() {
         >
           Retry
         </button>
-        <Link to="/" className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300">
+        <Link
+          to="/"
+          className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300"
+        >
           Go to Home
         </Link>
       </Notice>
@@ -101,10 +112,16 @@ function EditorPage() {
         titleClassName="text-red-600"
         message="Only the room's creator can open it. If this is your room, log in first."
       >
-        <Link to="/login" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+        <Link
+          to="/login"
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+        >
           Log In
         </Link>
-        <Link to="/" className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300">
+        <Link
+          to="/"
+          className="bg-gray-200 text-gray-800 px-6 py-2 rounded hover:bg-gray-300"
+        >
           Go to Home
         </Link>
       </Notice>
@@ -118,7 +135,10 @@ function EditorPage() {
         titleClassName="text-orange-600"
         message="Please create or join a room from the home page"
       >
-        <Link to="/" className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600">
+        <Link
+          to="/"
+          className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600"
+        >
           Go to Home
         </Link>
       </Notice>
@@ -146,15 +166,27 @@ function EditorPage() {
       <div
         ref={containerRef}
         className="flex-1 flex flex-col overflow-hidden"
-        style={{ marginRight: isChatOpen ? `${chatWidth}px` : '0' }}
+        style={{ marginRight: isChatOpen ? `${chatWidth}px` : "0" }}
       >
         <div
           className="flex bg-blue-100/50 border-b-2 border-blue-200 overflow-hidden"
           style={{ height: `${editorHeight}%` }}
         >
-          <Editor language="html" ytext={collab?.ytexts.html} awareness={collab?.awareness} />
-          <Editor language="css" ytext={collab?.ytexts.css} awareness={collab?.awareness} />
-          <Editor language="js" ytext={collab?.ytexts.js} awareness={collab?.awareness} />
+          <Editor
+            language="html"
+            ytext={collab?.ytexts.html}
+            awareness={collab?.awareness}
+          />
+          <Editor
+            language="css"
+            ytext={collab?.ytexts.css}
+            awareness={collab?.awareness}
+          />
+          <Editor
+            language="js"
+            ytext={collab?.ytexts.js}
+            awareness={collab?.awareness}
+          />
         </div>
 
         <div

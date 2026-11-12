@@ -4,10 +4,10 @@ export const generateRoomId = () => crypto.randomUUID();
 
 export const extractRoomIdFromInput = (input) => {
   try {
-    if (input.includes('http://') || input.includes('https://')) {
+    if (input.includes("http://") || input.includes("https://")) {
       const url = new URL(input);
       const params = new URLSearchParams(url.search);
-      return params.get('room') || input;
+      return params.get("room") || input;
     }
     return input;
   } catch {
@@ -20,7 +20,7 @@ export const copyToClipboard = async (text) => {
     await navigator.clipboard.writeText(text);
     return true;
   } catch (error) {
-    console.error('Failed to copy:', error);
+    console.error("Failed to copy:", error);
     return false;
   }
 };

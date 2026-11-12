@@ -1,5 +1,5 @@
-import Room from '../models/Room.js';
-import { generateRoomId } from '../utils/helpers.js';
+import Room from "../models/Room.js";
+import { generateRoomId } from "../utils/helpers.js";
 
 // The schema allows a room with no creator, so ownership checks have to cope
 // with one; dereferencing it blindly turned a 403 into a 500. Handles the
@@ -13,12 +13,12 @@ const isCreator = (room, userId) => {
 const nextUntitledName = async (creatorId) => {
   const untitledRooms = await Room.find({
     creator: creatorId,
-    name: { $regex: /^Untitled Project( \d+)?$/i }
-  }).select('name');
+    name: { $regex: /^Untitled Project( \d+)?$/i },
+  }).select("name");
 
   let maxNumber = 0;
-  untitledRooms.forEach(room => {
-    if (room.name === 'Untitled Project') {
+  untitledRooms.forEach((room) => {
+    if (room.name === "Untitled Project") {
       maxNumber = Math.max(maxNumber, 1);
     } else {
       const match = room.name.match(/^Untitled Project (\d+)$/i);
@@ -36,7 +36,7 @@ export const createRoom = async (req, res) => {
   const roomId = generateRoomId();
   let { name, isPublic = true } = req.body;
 
-  if (!name || name.trim() === '' || name === 'Untitled Project') {
+  if (!name || name.trim() === "" || name === "Untitled Project") {
     name = await nextUntitledName(req.user.id);
   }
 
@@ -45,7 +45,7 @@ export const createRoom = async (req, res) => {
     name,
     creator: req.user.id,
     isPublic,
-    code: { html: '', css: '', js: '' }
+    code: { html: "", css: "", js: "" },
   });
 
   res.status(201).json({
@@ -55,15 +55,15 @@ export const createRoom = async (req, res) => {
       roomId: room.roomId,
       name: room.name,
       isPublic: room.isPublic,
-      createdAt: room.createdAt
-    }
+      createdAt: room.createdAt,
+    },
   });
 };
 
 // GET /api/rooms/my-rooms
 export const getMyRooms = async (req, res) => {
   const rooms = await Room.find({ creator: req.user.id })
-    .select('roomId name isPublic lastModified createdAt')
+    .select("roomId name isPublic lastModified createdAt")
     .sort({ lastModified: -1 });
 
   res.json({ success: true, rooms });
@@ -71,20 +71,22 @@ export const getMyRooms = async (req, res) => {
 
 // GET /api/rooms/:roomId
 export const getRoom = async (req, res) => {
-  const room = await Room.findOne({ roomId: req.params.roomId })
-    .populate('creator', 'username');
+  const room = await Room.findOne({ roomId: req.params.roomId }).populate(
+    "creator",
+    "username",
+  );
 
   if (!room) {
     return res.status(404).json({
       success: false,
-      message: 'Room not found'
+      message: "Room not found",
     });
   }
 
   if (!room.isPublic && !isCreator(room, req.user && req.user.id)) {
     return res.status(403).json({
       success: false,
-      message: 'This room is private'
+      message: "This room is private",
     });
   }
 
@@ -98,8 +100,8 @@ export const getRoom = async (req, res) => {
       creator: room.creator,
       code: room.code,
       lastModified: room.lastModified,
-      createdAt: room.createdAt
-    }
+      createdAt: room.createdAt,
+    },
   });
 };
 
@@ -110,14 +112,14 @@ export const updateRoom = async (req, res) => {
   if (!room) {
     return res.status(404).json({
       success: false,
-      message: 'Room not found'
+      message: "Room not found",
     });
   }
 
   if (!isCreator(room, req.user.id)) {
     return res.status(403).json({
       success: false,
-      message: 'Not authorized to update this room'
+      message: "Not authorized to update this room",
     });
   }
 
@@ -129,8 +131,8 @@ export const updateRoom = async (req, res) => {
     room: {
       id: room._id,
       roomId: room.roomId,
-      name: room.name
-    }
+      name: room.name,
+    },
   });
 };
 
@@ -141,14 +143,14 @@ export const deleteRoom = async (req, res) => {
   if (!room) {
     return res.status(404).json({
       success: false,
-      message: 'Room not found'
+      message: "Room not found",
     });
   }
 
   if (!isCreator(room, req.user.id)) {
     return res.status(403).json({
       success: false,
-      message: 'Not authorized to delete this room'
+      message: "Not authorized to delete this room",
     });
   }
 
@@ -156,6 +158,6 @@ export const deleteRoom = async (req, res) => {
 
   res.json({
     success: true,
-    message: 'Room deleted successfully'
+    message: "Room deleted successfully",
   });
 };

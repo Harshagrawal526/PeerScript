@@ -1,9 +1,9 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE
+    expiresIn: process.env.JWT_EXPIRE,
   });
 };
 
@@ -16,7 +16,10 @@ export const register = async (req, res) => {
   if (user) {
     return res.status(400).json({
       success: false,
-      message: user.email === email ? 'Email already registered' : 'Username already taken'
+      message:
+        user.email === email
+          ? "Email already registered"
+          : "Username already taken",
     });
   }
 
@@ -30,8 +33,8 @@ export const register = async (req, res) => {
     user: {
       id: user._id,
       username: user.username,
-      email: user.email
-    }
+      email: user.email,
+    },
   });
 };
 
@@ -39,12 +42,12 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid credentials'
+      message: "Invalid credentials",
     });
   }
 
@@ -53,7 +56,7 @@ export const login = async (req, res) => {
   if (!isMatch) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid credentials'
+      message: "Invalid credentials",
     });
   }
 
@@ -65,8 +68,8 @@ export const login = async (req, res) => {
     user: {
       id: user._id,
       username: user.username,
-      email: user.email
-    }
+      email: user.email,
+    },
   });
 };
 
@@ -78,7 +81,7 @@ export const getMe = async (req, res) => {
     user: {
       id: req.user._id,
       username: req.user.username,
-      email: req.user.email
-    }
+      email: req.user.email,
+    },
   });
 };

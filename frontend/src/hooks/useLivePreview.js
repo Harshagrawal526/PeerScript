@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { buildPreviewDoc } from '../utils/previewDoc';
+import { useEffect, useState } from "react";
+import { buildPreviewDoc } from "../utils/previewDoc";
 
 const REBUILD_DELAY_MS = 250;
 
@@ -7,8 +7,8 @@ const REBUILD_DELAY_MS = 250;
 // Debounced because every rebuild reloads the iframe and re-runs the code, and
 // in a shared room the edits arrive from everyone at once.
 export const useLivePreview = (collab, onRebuild) => {
-  const [code, setCode] = useState({ html: '', css: '', js: '' });
-  const [srcDoc, setSrcDoc] = useState('');
+  const [code, setCode] = useState({ html: "", css: "", js: "" });
+  const [srcDoc, setSrcDoc] = useState("");
 
   useEffect(() => {
     if (!collab) return;
@@ -18,7 +18,7 @@ export const useLivePreview = (collab, onRebuild) => {
       setCode({
         html: ytexts.html.toString(),
         css: ytexts.css.toString(),
-        js: ytexts.js.toString()
+        js: ytexts.js.toString(),
       });
 
     sync();

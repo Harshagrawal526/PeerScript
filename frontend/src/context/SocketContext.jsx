@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import io from 'socket.io-client';
-import { useAuth } from './AuthContext';
-import { SOCKET_URL } from '../config';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import io from "socket.io-client";
+import { useAuth } from "./AuthContext";
+import { SOCKET_URL } from "../config";
 const SocketContext = createContext();
 export const useSocket = () => {
   return useContext(SocketContext);
@@ -15,16 +15,16 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     const newSocket = io(SOCKET_URL, {
       auth: {
-        token: token || null
-      }
+        token: token || null,
+      },
     });
 
-    newSocket.on('connect', () => setConnected(true));
+    newSocket.on("connect", () => setConnected(true));
 
-    newSocket.on('disconnect', () => setConnected(false));
+    newSocket.on("disconnect", () => setConnected(false));
 
-    newSocket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
+    newSocket.on("connect_error", (error) => {
+      console.error("Connection error:", error);
     });
     setSocket(newSocket);
 

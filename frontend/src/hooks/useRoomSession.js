@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { api } from '../utils/api';
+import { useEffect, useState } from "react";
+import { api } from "../utils/api";
 
 // Membership of a room: joining and leaving, its name, size, and whether the
 // server let us in at all.
 export const useRoomSession = (socket, roomId, token) => {
-  const [roomName, setRoomName] = useState('');
+  const [roomName, setRoomName] = useState("");
   const [usersCount, setUsersCount] = useState(1);
   const [accessDenied, setAccessDenied] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -17,7 +17,7 @@ export const useRoomSession = (socket, roomId, token) => {
         const { ok, data } = await api.get(`/api/rooms/${roomId}`, token);
         if (ok) setRoomName(data.room.name);
       } catch (error) {
-        console.error('Fetch room error:', error);
+        console.error("Fetch room error:", error);
       }
     };
 
@@ -27,8 +27,8 @@ export const useRoomSession = (socket, roomId, token) => {
   useEffect(() => {
     if (!socket || !roomId) return;
 
-    socket.emit('join-room', roomId);
-    return () => socket.emit('leave-room', roomId);
+    socket.emit("join-room", roomId);
+    return () => socket.emit("leave-room", roomId);
   }, [socket, roomId]);
 
   useEffect(() => {
@@ -48,17 +48,17 @@ export const useRoomSession = (socket, roomId, token) => {
       setUnavailable(false);
     };
 
-    socket.on('users-in-room', onUsersInRoom);
-    socket.on('room-access-denied', onDenied);
-    socket.on('room-unavailable', onUnavailable);
-    socket.on('yjs-sync', onSynced);
+    socket.on("users-in-room", onUsersInRoom);
+    socket.on("room-access-denied", onDenied);
+    socket.on("room-unavailable", onUnavailable);
+    socket.on("yjs-sync", onSynced);
 
     return () => {
       // By reference: socket.off with only a name removes every listener for it.
-      socket.off('users-in-room', onUsersInRoom);
-      socket.off('room-access-denied', onDenied);
-      socket.off('room-unavailable', onUnavailable);
-      socket.off('yjs-sync', onSynced);
+      socket.off("users-in-room", onUsersInRoom);
+      socket.off("room-access-denied", onDenied);
+      socket.off("room-unavailable", onUnavailable);
+      socket.off("yjs-sync", onSynced);
     };
   }, [socket]);
 

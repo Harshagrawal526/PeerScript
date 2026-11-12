@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useDragResize } from '../../hooks/useDragResize';
-import { useChatMessages } from '../../hooks/useChatMessages';
+import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useDragResize } from "../../hooks/useDragResize";
+import { useChatMessages } from "../../hooks/useChatMessages";
 
-const MIN_WIDTH_PERCENT = 0.10;
+const MIN_WIDTH_PERCENT = 0.1;
 const MAX_WIDTH_PERCENT = 0.35;
 
 // The panel is anchored to the right edge, so its width is the distance from
@@ -13,11 +13,11 @@ const minChatWidth = () => window.innerWidth * MIN_WIDTH_PERCENT;
 const maxChatWidth = () => window.innerWidth * MAX_WIDTH_PERCENT;
 
 const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const chatRef = useRef(null);
-  
+
   const { isAuthenticated } = useAuth();
 
   const {
@@ -27,7 +27,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     isUsernameSet,
     usernameError,
     claimUsername,
-    sendMessage
+    sendMessage,
   } = useChatMessages(socket, roomId);
 
   const { size: chatWidth, startResize } = useDragResize({
@@ -35,7 +35,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
     min: minChatWidth,
     max: maxChatWidth,
     measure: measureChatWidth,
-    bodyClass: 'chat-resizing'
+    bodyClass: "chat-resizing",
   });
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
   }, [chatWidth, onResize]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -52,14 +52,14 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
 
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       const newHeight = Math.min(textareaRef.current.scrollHeight, 240);
-      textareaRef.current.style.height = newHeight + 'px';
-      
+      textareaRef.current.style.height = newHeight + "px";
+
       if (textareaRef.current.scrollHeight > 240) {
-        textareaRef.current.style.overflowY = 'auto';
+        textareaRef.current.style.overflowY = "auto";
       } else {
-        textareaRef.current.style.overflowY = 'hidden';
+        textareaRef.current.style.overflowY = "hidden";
       }
     }
   }, [newMessage]);
@@ -72,30 +72,29 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (sendMessage(newMessage)) {
-      setNewMessage('');
+      setNewMessage("");
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
     }
   };
 
-
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       ref={chatRef}
       className="fixed right-0 top-0 h-screen bg-white border-l-2 border-blue-300 shadow-2xl flex flex-col z-30"
       style={{ width: `${chatWidth}px` }}
@@ -104,7 +103,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
       <div
         onMouseDown={startResize}
         className="chat-resize-handle absolute left-0 top-0 w-1.5 h-full cursor-ew-resize hover:bg-blue-400 transition-colors group"
-        style={{ marginLeft: '-3px' }}
+        style={{ marginLeft: "-3px" }}
       >
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-12 bg-blue-400/50 rounded-full group-hover:bg-blue-500 transition-colors"></div>
       </div>
@@ -127,11 +126,11 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
         <div className="flex-1 flex items-center justify-center p-6">
           <form onSubmit={handleSetUsername} className="w-full">
             <label className="block text-gray-700 font-semibold mb-2">
-              {isAuthenticated 
-                ? 'Setting up your chat...' 
-                : 'Enter your name to start chatting:'}
+              {isAuthenticated
+                ? "Setting up your chat..."
+                : "Enter your name to start chatting:"}
             </label>
-            
+
             {!isAuthenticated && (
               <>
                 <input
@@ -154,7 +153,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
                 </button>
               </>
             )}
-            
+
             {isAuthenticated && (
               <div className="text-center">
                 <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -172,7 +171,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
                 ✅ Chatting as <strong>{username}</strong>
               </div>
             )}
-            
+
             {messages.length === 0 ? (
               <div className="text-center text-gray-500 mt-8">
                 <p className="text-4xl mb-2">💬</p>
@@ -182,23 +181,31 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
             ) : (
               messages.map((msg, index) => (
                 <div key={index}>
-                  {msg.type === 'system' ? (
+                  {msg.type === "system" ? (
                     <div className="text-center text-xs text-gray-500 italic my-2">
                       {msg.message}
                     </div>
                   ) : (
-                    <div className={`flex flex-col ${msg.isOwn ? 'items-end' : 'items-start'}`}>
-                      <div className={`max-w-[75%] rounded-lg px-3 py-2 ${
-                        msg.isOwn 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-white border border-blue-200'
-                      }`}>
-                        <p className={`text-xs font-semibold mb-1 ${
-                          msg.isOwn ? 'text-blue-100' : 'text-blue-600'
-                        }`}>
+                    <div
+                      className={`flex flex-col ${msg.isOwn ? "items-end" : "items-start"}`}
+                    >
+                      <div
+                        className={`max-w-[75%] rounded-lg px-3 py-2 ${
+                          msg.isOwn
+                            ? "bg-blue-600 text-white"
+                            : "bg-white border border-blue-200"
+                        }`}
+                      >
+                        <p
+                          className={`text-xs font-semibold mb-1 ${
+                            msg.isOwn ? "text-blue-100" : "text-blue-600"
+                          }`}
+                        >
                           {msg.username}
                         </p>
-                        <p className="text-sm break-words whitespace-pre-wrap">{msg.message}</p>
+                        <p className="text-sm break-words whitespace-pre-wrap">
+                          {msg.message}
+                        </p>
                       </div>
                       <span className="text-xs text-gray-500 mt-1">
                         {formatTime(msg.timestamp)}
@@ -212,7 +219,10 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSendMessage} className="p-4 bg-white border-t-2 border-blue-200">
+          <form
+            onSubmit={handleSendMessage}
+            className="p-4 bg-white border-t-2 border-blue-200"
+          >
             <div className="flex flex-col gap-2">
               <textarea
                 ref={textareaRef}
@@ -223,7 +233,7 @@ const Chat = ({ socket, roomId, isOpen, onToggle, onResize }) => {
                 className="w-full px-4 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 resize-none"
                 maxLength={500}
                 rows={1}
-                style={{ minHeight: '40px', maxHeight: '240px' }}
+                style={{ minHeight: "40px", maxHeight: "240px" }}
               />
               <button
                 type="submit"

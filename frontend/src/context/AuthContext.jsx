@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api } from '../utils/api';
-import { sessionStore } from '../utils/storage';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { api } from "../utils/api";
+import { sessionStore } from "../utils/storage";
 const AuthContext = createContext();
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 };
@@ -18,28 +18,28 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const storedToken = sessionStore.get('token');
-      
+      const storedToken = sessionStore.get("token");
+
       if (storedToken) {
         try {
-          const { ok, data } = await api.get('/api/auth/me', storedToken);
+          const { ok, data } = await api.get("/api/auth/me", storedToken);
 
           if (ok) {
             setUser(data.user);
             setToken(storedToken);
           } else {
-            sessionStore.remove('token');
+            sessionStore.remove("token");
             setUser(null);
             setToken(null);
           }
         } catch (error) {
-          console.error('Auth check error:', error);
-          sessionStore.remove('token');
+          console.error("Auth check error:", error);
+          sessionStore.remove("token");
           setUser(null);
           setToken(null);
         }
       }
-      
+
       setLoading(false);
       setInitialCheckDone(true);
     };
@@ -49,63 +49,72 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      const { ok, data } = await api.post('/api/auth/register', { username, email, password });
+      const { ok, data } = await api.post("/api/auth/register", {
+        username,
+        email,
+        password,
+      });
 
       if (ok) {
         setUser(data.user);
         setToken(data.token);
-        sessionStore.set('token', data.token);
+        sessionStore.set("token", data.token);
         return { success: true };
       } else {
         return {
           success: false,
-          message: data?.message || 'Registration failed'
+          message: data?.message || "Registration failed",
         };
       }
     } catch (error) {
-      console.error('Register error:', error);
-      return { success: false, message: 'Network error' };
+      console.error("Register error:", error);
+      return { success: false, message: "Network error" };
     }
   };
 
   const login = async (email, password) => {
     try {
-      const { ok, data } = await api.post('/api/auth/login', { email, password });
+      const { ok, data } = await api.post("/api/auth/login", {
+        email,
+        password,
+      });
 
       if (ok) {
         setUser(data.user);
         setToken(data.token);
-        sessionStore.set('token', data.token);
+        sessionStore.set("token", data.token);
         return { success: true };
       } else {
         return {
           success: false,
-          message: data?.message || 'Login failed'
+          message: data?.message || "Login failed",
         };
       }
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, message: 'Network error' };
+      console.error("Login error:", error);
+      return { success: false, message: "Network error" };
     }
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    sessionStore.remove('token');
+    sessionStore.remove("token");
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      token, 
-      loading, 
-      initialCheckDone,
-      register, 
-      login, 
-      logout,
-      isAuthenticated: !!user 
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        initialCheckDone,
+        register,
+        login,
+        logout,
+        isAuthenticated: !!user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

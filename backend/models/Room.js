@@ -1,51 +1,54 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const RoomSchema = new mongoose.Schema({
-  roomId: {
-    type: String,
-    required: true,
-    unique: true // already builds the index; a separate index: true duplicates it
-  },
-  name: {
-    type: String,
-    default: 'Untitled Project',
-    trim: true,
-    maxlength: 50
-  },
-  creator: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: false // Allow anonymous rooms for now
-  },
-  code: {
-    html: {
+const RoomSchema = new mongoose.Schema(
+  {
+    roomId: {
       type: String,
-      default: ''
+      required: true,
+      unique: true, // already builds the index; a separate index: true duplicates it
     },
-    css: {
+    name: {
       type: String,
-      default: ''
+      default: "Untitled Project",
+      trim: true,
+      maxlength: 50,
     },
-    js: {
-      type: String,
-      default: ''
-    }
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false, // Allow anonymous rooms for now
+    },
+    code: {
+      html: {
+        type: String,
+        default: "",
+      },
+      css: {
+        type: String,
+        default: "",
+      },
+      js: {
+        type: String,
+        default: "",
+      },
+    },
+    isPublic: {
+      type: Boolean,
+      default: true,
+    },
+    lastModified: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  isPublic: {
-    type: Boolean,
-    default: true
+  {
+    timestamps: true,
   },
-  lastModified: {
-    type: Date,
-    default: Date.now
-  }
-}, {
-  timestamps: true
-});
+);
 
-RoomSchema.pre('save', function(next) {
+RoomSchema.pre("save", function (next) {
   this.lastModified = Date.now();
   next();
 });
 
-export default mongoose.model('Room', RoomSchema);
+export default mongoose.model("Room", RoomSchema);

@@ -3,7 +3,7 @@
 // opaque origin and '*' is the only possible postMessage target; the parent
 // verifies the sender by window identity instead.
 
-export const PREVIEW_MESSAGE_SOURCE = 'peerscript-preview-console';
+export const PREVIEW_MESSAGE_SOURCE = "peerscript-preview-console";
 
 // Trimmed here rather than in the panel, so a runaway log never crosses in full.
 const MAX_ARG_LENGTH = 2000;

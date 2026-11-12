@@ -1,14 +1,14 @@
-import { API_URL } from '../config';
+import { API_URL } from "../config";
 
-const request = async (path, { method = 'GET', token, body } = {}) => {
+const request = async (path, { method = "GET", token, body } = {}) => {
   const headers = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const response = await fetch(`${API_URL}${path}`, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   let data = null;
@@ -23,7 +23,7 @@ const request = async (path, { method = 'GET', token, body } = {}) => {
 
 export const api = {
   get: (path, token) => request(path, { token }),
-  post: (path, body, token) => request(path, { method: 'POST', body, token }),
-  put: (path, body, token) => request(path, { method: 'PUT', body, token }),
-  delete: (path, token) => request(path, { method: 'DELETE', token })
+  post: (path, body, token) => request(path, { method: "POST", body, token }),
+  put: (path, body, token) => request(path, { method: "PUT", body, token }),
+  delete: (path, token) => request(path, { method: "DELETE", token }),
 };

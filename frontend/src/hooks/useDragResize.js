@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const resolve = (bound) => (typeof bound === 'function' ? bound() : bound);
+const resolve = (bound) => (typeof bound === "function" ? bound() : bound);
 
 // Drag lifecycle, document-level listeners and animation-frame coalescing for a
 // resize handle. Only the measurement differs between handles, so callers pass
@@ -27,7 +27,7 @@ export const useDragResize = ({ initial, min, max, measure, bodyClass }) => {
         setSize(Math.min(resolve(max), Math.max(resolve(min), measured)));
       });
     },
-    [min, max]
+    [min, max],
   );
 
   const startResize = useCallback((event) => {
@@ -43,12 +43,12 @@ export const useDragResize = ({ initial, min, max, measure, bodyClass }) => {
     // The class is not cosmetic: its pointer-events rule is what stops the
     // preview iframe swallowing the mousemove events this drag needs.
     document.body.classList.add(bodyClass);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', stopResize);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", stopResize);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', stopResize);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", stopResize);
       document.body.classList.remove(bodyClass);
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };

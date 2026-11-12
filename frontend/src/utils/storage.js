@@ -25,5 +25,5 @@ export const sessionStore = {
     } catch {
       // Nothing to clear if storage is unreachable.
     }
-  }
+  },
 };

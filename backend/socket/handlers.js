@@ -1,7 +1,7 @@
-import * as Y from 'yjs';
-import Room from '../models/Room.js';
+import * as Y from "yjs";
+import Room from "../models/Room.js";
 
-const LANGUAGES = ['html', 'css', 'js'];
+const LANGUAGES = ["html", "css", "js"];
 const SAVE_DEBOUNCE_MS = 2000;
 
 // Client-supplied values: not necessarily strings, bounded, or present.
@@ -15,12 +15,14 @@ const MAX_UPDATE_BYTES = 1024 * 1024;
 const MAX_ROOMS_PER_SOCKET = 5;
 
 const asRoomId = (value) =>
-  typeof value === 'string' && value.length > 0 && value.length <= MAX_ROOM_ID_LENGTH
+  typeof value === "string" &&
+  value.length > 0 &&
+  value.length <= MAX_ROOM_ID_LENGTH
     ? value
     : null;
 
 const asText = (value, maxLength) => {
-  if (typeof value !== 'string') return null;
+  if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 && trimmed.length <= maxLength ? trimmed : null;
 };
@@ -49,7 +51,7 @@ const loadRoomIntoDoc = async (roomId, ydoc) => {
     }
     return true;
   } catch (error) {
-    console.error('Error loading room:', error);
+    console.error("Error loading room:", error);
     return false;
   }
 };
@@ -70,7 +72,7 @@ const ensureRoom = (roomId) => {
       loaded: false,
       initPromise: null,
       saveTimer: null,
-      dirty: false
+      dirty: false,
     };
     startLoad(room, roomId);
     activeRooms.set(roomId, room);
@@ -106,11 +108,11 @@ const persistRoom = async (roomId) => {
     await Room.findOneAndUpdate(
       { roomId },
       { code, lastModified: Date.now() },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
     room.dirty = false;
   } catch (error) {
-    console.error('Error saving to database:', error);
+    console.error("Error saving to database:", error);
   }
 };
 
@@ -128,11 +130,15 @@ const schedulePersist = (roomId) => {
 // (anonymous quick-rooms) are treated as public. Fails closed on DB errors.
 const canAccessRoom = async (roomId, socket) => {
   try {
-    const dbRoom = await Room.findOne({ roomId }).select('isPublic creator');
+    const dbRoom = await Room.findOne({ roomId }).select("isPublic creator");
     if (!dbRoom || dbRoom.isPublic) return true;
-    return !!(socket.user && dbRoom.creator && dbRoom.creator.toString() === socket.user.id);
+    return !!(
+      socket.user &&
+      dbRoom.creator &&
+      dbRoom.creator.toString() === socket.user.id
+    );
   } catch (error) {
-    console.error('Error checking room access:', error);
+    console.error("Error checking room access:", error);
     return false;
   }
 };
@@ -141,10 +147,14 @@ const handleJoinRoom = (io, socket) => async (rawRoomId) => {
   const roomId = asRoomId(rawRoomId);
   if (!roomId) return;
 
-  if (!socket.rooms.has(roomId) && joinedRoomCount(socket) >= MAX_ROOMS_PER_SOCKET) return;
+  if (
+    !socket.rooms.has(roomId) &&
+    joinedRoomCount(socket) >= MAX_ROOMS_PER_SOCKET
+  )
+    return;
 
   if (!(await canAccessRoom(roomId, socket))) {
-    socket.emit('room-access-denied');
+    socket.emit("room-access-denied");
     return;
   }
 
@@ -157,13 +167,15 @@ const handleJoinRoom = (io, socket) => async (rawRoomId) => {
 
   if (username) {
     activeRoom.usernames.add(username);
-    socket.emit('username-auto-set', { username });
-    socket.to(roomId).emit('user-joined-chat', { username });
+    socket.emit("username-auto-set", { username });
+    socket.to(roomId).emit("user-joined-chat", { username });
   }
 
-  console.log(`User ${socket.id} joined room ${roomId} (${activeRoom.users.size} users)`);
+  console.log(
+    `User ${socket.id} joined room ${roomId} (${activeRoom.users.size} users)`,
+  );
 
-  io.to(roomId).emit('users-in-room', activeRoom.users.size);
+  io.to(roomId).emit("users-in-room", activeRoom.users.size);
 };
 
 // Client asks for the current doc state; reply with a full Yjs update.
@@ -172,10 +184,14 @@ const handleYjsRequestSync = (io, socket) => async (rawRoomId) => {
   const roomId = asRoomId(rawRoomId);
   if (!roomId) return;
 
-  if (!socket.rooms.has(roomId) && joinedRoomCount(socket) >= MAX_ROOMS_PER_SOCKET) return;
+  if (
+    !socket.rooms.has(roomId) &&
+    joinedRoomCount(socket) >= MAX_ROOMS_PER_SOCKET
+  )
+    return;
 
   if (!(await canAccessRoom(roomId, socket))) {
-    socket.emit('room-access-denied');
+    socket.emit("room-access-denied");
     return;
   }
 
@@ -183,91 +199,99 @@ const handleYjsRequestSync = (io, socket) => async (rawRoomId) => {
   const room = ensureRoom(roomId);
 
   if (!(await ensureLoaded(roomId))) {
-    socket.emit('room-unavailable');
+    socket.emit("room-unavailable");
     return;
   }
 
-  socket.emit('yjs-sync', Y.encodeStateAsUpdate(room.ydoc));
+  socket.emit("yjs-sync", Y.encodeStateAsUpdate(room.ydoc));
 };
 
-const handleYjsUpdate = (io, socket) => async ({ roomId, update }) => {
-  // Only sockets that passed the join gate may write
-  if (!socket.rooms.has(roomId)) return;
+const handleYjsUpdate =
+  (io, socket) =>
+  async ({ roomId, update }) => {
+    // Only sockets that passed the join gate may write
+    if (!socket.rooms.has(roomId)) return;
 
-  const room = activeRooms.get(roomId);
-  if (!room || !update) return;
-
-  // Reject oversized payloads before allocating a typed array for them
-  const size = update.byteLength ?? update.length;
-  if (typeof size !== 'number' || size > MAX_UPDATE_BYTES) return;
-
-  await room.initPromise;
-
-  try {
-    Y.applyUpdate(room.ydoc, new Uint8Array(update));
-  } catch (error) {
-    console.error('Invalid Yjs update:', error.message);
-    return;
-  }
-
-  socket.to(roomId).emit('yjs-update', update);
-  room.dirty = true;
-  schedulePersist(roomId);
-};
-
-// Cursor/selection presence: pure relay, clients own the awareness protocol
-const handleYjsAwareness = (io, socket) => ({ roomId, update }) => {
-  if (!update || !socket.rooms.has(roomId)) return;
-  socket.to(roomId).emit('yjs-awareness', update);
-};
-
-const handleSetUsername = (io, socket) => ({ roomId, username: rawUsername }) => {
-  const username = asText(rawUsername, MAX_USERNAME_LENGTH);
-  if (!username || !socket.rooms.has(roomId)) return;
-
-  if (activeRooms.has(roomId)) {
     const room = activeRooms.get(roomId);
+    if (!room || !update) return;
 
-    if (room.usernames.has(username)) {
-      socket.emit('username-taken');
+    // Reject oversized payloads before allocating a typed array for them
+    const size = update.byteLength ?? update.length;
+    if (typeof size !== "number" || size > MAX_UPDATE_BYTES) return;
+
+    await room.initPromise;
+
+    try {
+      Y.applyUpdate(room.ydoc, new Uint8Array(update));
+    } catch (error) {
+      console.error("Invalid Yjs update:", error.message);
       return;
     }
 
-    const user = room.users.get(socket.id);
+    socket.to(roomId).emit("yjs-update", update);
+    room.dirty = true;
+    schedulePersist(roomId);
+  };
 
-    if (user) {
-      if (user.username) {
-        room.usernames.delete(user.username);
+// Cursor/selection presence: pure relay, clients own the awareness protocol
+const handleYjsAwareness =
+  (io, socket) =>
+  ({ roomId, update }) => {
+    if (!update || !socket.rooms.has(roomId)) return;
+    socket.to(roomId).emit("yjs-awareness", update);
+  };
+
+const handleSetUsername =
+  (io, socket) =>
+  ({ roomId, username: rawUsername }) => {
+    const username = asText(rawUsername, MAX_USERNAME_LENGTH);
+    if (!username || !socket.rooms.has(roomId)) return;
+
+    if (activeRooms.has(roomId)) {
+      const room = activeRooms.get(roomId);
+
+      if (room.usernames.has(username)) {
+        socket.emit("username-taken");
+        return;
       }
 
-      user.username = username;
-      room.usernames.add(username);
-      socket.emit('username-accepted');
-      socket.to(roomId).emit('user-joined-chat', { username });
+      const user = room.users.get(socket.id);
+
+      if (user) {
+        if (user.username) {
+          room.usernames.delete(user.username);
+        }
+
+        user.username = username;
+        room.usernames.add(username);
+        socket.emit("username-accepted");
+        socket.to(roomId).emit("user-joined-chat", { username });
+      }
     }
-  }
-};
+  };
 
-const handleSendMessage = (io, socket) => ({ roomId, message: rawMessage }) => {
-  const message = asText(rawMessage, MAX_MESSAGE_LENGTH);
-  if (!message || !socket.rooms.has(roomId)) return;
+const handleSendMessage =
+  (io, socket) =>
+  ({ roomId, message: rawMessage }) => {
+    const message = asText(rawMessage, MAX_MESSAGE_LENGTH);
+    if (!message || !socket.rooms.has(roomId)) return;
 
-  if (activeRooms.has(roomId)) {
-    const room = activeRooms.get(roomId);
-    const user = room.users.get(socket.id);
+    if (activeRooms.has(roomId)) {
+      const room = activeRooms.get(roomId);
+      const user = room.users.get(socket.id);
 
-    if (user && user.username) {
-      const messageData = {
-        username: user.username,
-        message,
-        timestamp: Date.now(),
-        socketId: socket.id
-      };
+      if (user && user.username) {
+        const messageData = {
+          username: user.username,
+          message,
+          timestamp: Date.now(),
+          socketId: socket.id,
+        };
 
-      io.to(roomId).emit('chat-message', messageData);
+        io.to(roomId).emit("chat-message", messageData);
+      }
     }
-  }
-};
+  };
 
 const handleLeaveRoom = (io, socket) => (roomId) => {
   handleUserLeave(io, socket.id, roomId);
@@ -288,13 +312,15 @@ const handleUserLeave = (io, socketId, roomId) => {
 
     if (user && user.username) {
       room.usernames.delete(user.username);
-      io.to(roomId).emit('user-left-chat', { username: user.username });
+      io.to(roomId).emit("user-left-chat", { username: user.username });
     }
 
     room.users.delete(socketId);
     const usersInRoom = room.users.size;
 
-    console.log(`User ${socketId} left room ${roomId} (${usersInRoom} users remaining)`);
+    console.log(
+      `User ${socketId} left room ${roomId} (${usersInRoom} users remaining)`,
+    );
 
     if (usersInRoom === 0) {
       if (room.saveTimer) {
@@ -310,7 +336,7 @@ const handleUserLeave = (io, socketId, roomId) => {
         }
       });
     } else {
-      io.to(roomId).emit('users-in-room', usersInRoom);
+      io.to(roomId).emit("users-in-room", usersInRoom);
     }
   }
 };
@@ -324,5 +350,5 @@ export {
   handleYjsRequestSync,
   handleYjsUpdate,
   handleYjsAwareness,
-  activeRooms
+  activeRooms,
 };

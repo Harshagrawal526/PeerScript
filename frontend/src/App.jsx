@@ -1,16 +1,16 @@
-import React, { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import React, { lazy, Suspense } from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
 // Each page loads as its own chunk, so the editor (CodeMirror + Yjs) is
 // only downloaded when a room is actually opened
-const Home = lazy(() => import('./pages/Home'));
-const EditorPage = lazy(() => import('./pages/EditorPage'));
-const About = lazy(() => import('./pages/About'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const NotFound = lazy(() => import('./pages/NotFound'));
+const Home = lazy(() => import("./pages/Home"));
+const EditorPage = lazy(() => import("./pages/EditorPage"));
+const About = lazy(() => import("./pages/About"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const Loader = () => (
   <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
@@ -24,13 +24,13 @@ const Loader = () => (
 const page = (element) => <Suspense fallback={<Loader />}>{element}</Suspense>;
 
 const router = createBrowserRouter([
-  { path: '/', element: page(<Home />) },
-  { path: '/app', element: page(<EditorPage />) },
-  { path: '/about', element: page(<About />) },
-  { path: '/login', element: page(<Login />) },
-  { path: '/register', element: page(<Register />) },
-  { path: '/dashboard', element: page(<Dashboard />) },
-  { path: '*', element: page(<NotFound />) },
+  { path: "/", element: page(<Home />) },
+  { path: "/app", element: page(<EditorPage />) },
+  { path: "/about", element: page(<About />) },
+  { path: "/login", element: page(<Login />) },
+  { path: "/register", element: page(<Register />) },
+  { path: "/dashboard", element: page(<Dashboard />) },
+  { path: "*", element: page(<NotFound />) },
 ]);
 
 function App() {

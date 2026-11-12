@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
-import Modal from '../components/ui/Modal';
-import { useRooms } from '../hooks/useRooms';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
+import Modal from "../components/ui/Modal";
+import { useRooms } from "../hooks/useRooms";
 
 function Dashboard() {
   const navigate = useNavigate();
   const { user, token, isAuthenticated } = useAuth();
-  
+
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newRoomName, setNewRoomName] = useState('');
+  const [newRoomName, setNewRoomName] = useState("");
   const [creating, setCreating] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [renamingRoom, setRenamingRoom] = useState(null);
   const [renaming, setRenaming] = useState(false);
 
-  const { rooms, loading, createRoom, deleteRoom, renameRoom } = useRooms(token);
+  const { rooms, loading, createRoom, deleteRoom, renameRoom } =
+    useRooms(token);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [isAuthenticated, navigate]);
 
@@ -33,23 +34,27 @@ function Dashboard() {
       const room = await createRoom(newRoomName);
       if (room) navigate(`/app?room=${room.roomId}`);
     } catch (error) {
-      console.error('Create room error:', error);
-      alert('Failed to create room');
+      console.error("Create room error:", error);
+      alert("Failed to create room");
     } finally {
       setCreating(false);
     }
   };
 
   const handleDeleteRoom = async (roomId) => {
-    if (!window.confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this room? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
     try {
-      if (!(await deleteRoom(roomId))) alert('Failed to delete room');
+      if (!(await deleteRoom(roomId))) alert("Failed to delete room");
     } catch (error) {
-      console.error('Delete room error:', error);
-      alert('Failed to delete room');
+      console.error("Delete room error:", error);
+      alert("Failed to delete room");
     }
   };
 
@@ -63,25 +68,25 @@ function Dashboard() {
       if (await renameRoom(renamingRoom.roomId, newRoomName.trim())) {
         setShowRenameModal(false);
         setRenamingRoom(null);
-        setNewRoomName('');
+        setNewRoomName("");
       } else {
-        alert('Failed to rename room');
+        alert("Failed to rename room");
       }
     } catch (error) {
-      console.error('Rename error:', error);
-      alert('Failed to rename room');
+      console.error("Rename error:", error);
+      alert("Failed to rename room");
     } finally {
       setRenaming(false);
     }
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -100,7 +105,9 @@ function Dashboard() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 My Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">Welcome back, {user?.username}!</p>
+              <p className="text-gray-600 mt-2">
+                Welcome back, {user?.username}!
+              </p>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
@@ -118,8 +125,12 @@ function Dashboard() {
           ) : rooms.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-blue-200">
               <div className="text-6xl mb-4">📝</div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">No rooms yet</h2>
-              <p className="text-gray-600 mb-6">Create your first room to start coding!</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                No rooms yet
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Create your first room to start coding!
+              </p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg cursor-pointer"
@@ -138,12 +149,14 @@ function Dashboard() {
                     <h3 className="text-xl font-bold text-gray-800 truncate flex-1">
                       {room.name}
                     </h3>
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                      room.isPublic 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {room.isPublic ? 'Public' : 'Private'}
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                        room.isPublic
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {room.isPublic ? "Public" : "Private"}
                     </span>
                   </div>
 
@@ -152,31 +165,31 @@ function Dashboard() {
                   </p>
 
                   <div className="flex gap-2">
-  <button
-    onClick={() => navigate(`/app?room=${room.roomId}`)}
-    className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
-  >
-    Open
-  </button>
-  <button
-    onClick={() => {
-      setRenamingRoom(room);
-      setNewRoomName(room.name);
-      setShowRenameModal(true);
-    }}
-    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors cursor-pointer"
-    title="Rename"
-  >
-    ✏️
-  </button>
-  <button
-    onClick={() => handleDeleteRoom(room.roomId)}
-    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
-    title="Delete"
-  >
-    🗑️
-  </button>
-</div>
+                    <button
+                      onClick={() => navigate(`/app?room=${room.roomId}`)}
+                      className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
+                    >
+                      Open
+                    </button>
+                    <button
+                      onClick={() => {
+                        setRenamingRoom(room);
+                        setNewRoomName(room.name);
+                        setShowRenameModal(true);
+                      }}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors cursor-pointer"
+                      title="Rename"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRoom(room.roomId)}
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
+                      title="Delete"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -191,7 +204,7 @@ function Dashboard() {
         isOpen={showCreateModal}
         onClose={() => {
           setShowCreateModal(false);
-          setNewRoomName('');
+          setNewRoomName("");
         }}
         title="Create New Room"
       >
@@ -209,7 +222,9 @@ function Dashboard() {
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
               autoFocus
             />
-            <p className="text-xs text-gray-500 mt-1">Leave empty for &quot;Untitled Project&quot;</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Leave empty for &quot;Untitled Project&quot;
+            </p>
           </div>
 
           <div className="flex gap-2">
@@ -217,7 +232,7 @@ function Dashboard() {
               type="button"
               onClick={() => {
                 setShowCreateModal(false);
-                setNewRoomName('');
+                setNewRoomName("");
               }}
               className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
             >
@@ -228,60 +243,60 @@ function Dashboard() {
               disabled={creating}
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
             >
-              {creating ? 'Creating...' : 'Create'}
+              {creating ? "Creating..." : "Create"}
             </button>
           </div>
         </form>
       </Modal>
       {/* Rename Room Modal */}
-<Modal
-  isOpen={showRenameModal}
-  onClose={() => {
-    setShowRenameModal(false);
-    setRenamingRoom(null);
-    setNewRoomName('');
-  }}
-  title="Rename Room"
->
-  <form onSubmit={handleRenameRoom} className="space-y-4">
-    <div>
-      <label className="block text-gray-700 font-semibold mb-2">
-        Room Name
-      </label>
-      <input
-        type="text"
-        value={newRoomName}
-        onChange={(e) => setNewRoomName(e.target.value)}
-        placeholder="Enter new name"
-        maxLength={50}
-        required
-        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-        autoFocus
-      />
-    </div>
-
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={() => {
+      <Modal
+        isOpen={showRenameModal}
+        onClose={() => {
           setShowRenameModal(false);
           setRenamingRoom(null);
-          setNewRoomName('');
+          setNewRoomName("");
         }}
-        className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+        title="Rename Room"
       >
-        Cancel
-      </button>
-      <button
-        type="submit"
-        disabled={renaming || !newRoomName.trim()}
-        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-      >
-        {renaming ? 'Renaming...' : 'Rename'}
-      </button>
-    </div>
-  </form>
-</Modal>
+        <form onSubmit={handleRenameRoom} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Room Name
+            </label>
+            <input
+              type="text"
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              placeholder="Enter new name"
+              maxLength={50}
+              required
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              autoFocus
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowRenameModal(false);
+                setRenamingRoom(null);
+                setNewRoomName("");
+              }}
+              className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={renaming || !newRoomName.trim()}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              {renaming ? "Renaming..." : "Rename"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

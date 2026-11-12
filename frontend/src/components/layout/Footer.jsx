@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const Footer = () => {
   return (
@@ -15,9 +15,7 @@ const Footer = () => {
           </div>
 
           <div className="flex flex-col items-center md:items-end">
-            <p className="text-sm text-gray-400 mb-2">
-              Built with ❤️ using
-            </p>
+            <p className="text-sm text-gray-400 mb-2">Built with ❤️ using</p>
             <div className="flex gap-3 text-xs">
               <span className="bg-blue-600 px-2 py-1 rounded">React</span>
               <span className="bg-green-600 px-2 py-1 rounded">Node.js</span>

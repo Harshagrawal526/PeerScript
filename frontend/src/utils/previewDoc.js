@@ -1,6 +1,6 @@
 // Builds the srcDoc for the sandboxed preview iframe.
-import { consoleBridge } from './consoleBridge';
-import { escapeClosingTags } from './html';
+import { consoleBridge } from "./consoleBridge";
+import { escapeClosingTags } from "./html";
 
 // The bridge goes first so it is installed before any inline script in the
 // room's HTML runs, not just before the JS pane.

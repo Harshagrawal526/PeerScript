@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 const socketAuthMiddleware = async (socket, next) => {
   try {
@@ -11,8 +11,8 @@ const socketAuthMiddleware = async (socket, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    const user = await User.findById(decoded.id).select('username email');
+
+    const user = await User.findById(decoded.id).select("username email");
 
     if (!user) {
       socket.user = null;
@@ -22,12 +22,12 @@ const socketAuthMiddleware = async (socket, next) => {
     socket.user = {
       id: user._id.toString(),
       username: user.username,
-      email: user.email
+      email: user.email,
     };
 
     next();
   } catch (error) {
-    console.error('Socket auth error:', error.message);
+    console.error("Socket auth error:", error.message);
     // A bad token means anonymous, not rejected: rooms may be public.
     socket.user = null;
     next();
