@@ -2,8 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../utils/api';
 import { sessionStore } from '../utils/storage';
 const AuthContext = createContext();
-
-// eslint-disable-next-line react-refresh/only-export-components -- hook lives with its provider; only costs HMR granularity
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

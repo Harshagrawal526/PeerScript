@@ -1,6 +1,5 @@
 // Central error handler. Express 5 forwards rejected promises from async
 // route handlers here automatically, so controllers don't need try/catch.
-// eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
   // Two simultaneous registrations both pass the existence check; the loser
   // hits the unique index. That is the client's situation, not a server fault.

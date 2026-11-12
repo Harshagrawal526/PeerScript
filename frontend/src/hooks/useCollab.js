@@ -84,8 +84,6 @@ export const useCollab = (socket, roomId, displayName) => {
     });
 
     requestSync();
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- doc/awareness must live in state so consumers re-render when (re)created
     setCollab({
       ydoc,
       awareness,
