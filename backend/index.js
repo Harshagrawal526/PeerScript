@@ -1,23 +1,10 @@
-const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// Without these, jwt.sign throws on the first login rather than at startup.
-const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'JWT_EXPIRE'];
-const missingEnv = REQUIRED_ENV.filter((name) => !process.env[name]);
-
-if (missingEnv.length > 0) {
-  console.error(`Missing required environment variable(s): ${missingEnv.join(', ')}`);
-  process.exit(1);
-}
-
+const app = require('./app');
 const socketAuthMiddleware = require('./middleware/socketAuth');
-
 const {
   handleJoinRoom,
   handleLeaveRoom,
@@ -29,10 +16,16 @@ const {
   handleYjsAwareness
 } = require('./socket/handlers');
 
-const app = express();
-const server = http.createServer(app);
+// Without these, jwt.sign throws on the first login rather than at startup.
+const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'JWT_EXPIRE'];
+const missingEnv = REQUIRED_ENV.filter((name) => !process.env[name]);
 
-// Comma-separated list, e.g. "http://localhost:5173,https://peer-script.vercel.app"
+if (missingEnv.length > 0) {
+  console.error(`Missing required environment variable(s): ${missingEnv.join(', ')}`);
+  process.exit(1);
+}
+
+const server = http.createServer(app);
 const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173')
   .split(',')
   .map(origin => origin.trim());
@@ -44,53 +37,6 @@ const io = new Server(server, {
     credentials: true
   }
 });
-
-// Render terminates TLS at a proxy; required for rate limiting to see real client IPs
-app.set('trust proxy', 1);
-
-app.use(helmet());
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
-app.use(express.json());
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 300,
-  standardHeaders: true,
-  legacyHeaders: false
-});
-
-// Stricter limit on credential endpoints to slow brute-force attempts
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Too many attempts, please try again later' }
-});
-
-app.use('/api', apiLimiter);
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
-
-app.get('/', (req, res) => {
-  res.json({
-    message: 'PeerScript Backend is running!',
-    version: '4.0.0',
-    status: 'healthy'
-  });
-});
-
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/rooms', require('./routes/rooms'));
-
-app.use('/api', (req, res) => {
-  res.status(404).json({ success: false, message: 'Not found' });
-});
-
-app.use(require('./middleware/errorHandler'));
 
 io.use(socketAuthMiddleware);
 
