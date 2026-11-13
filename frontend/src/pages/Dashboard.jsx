@@ -161,7 +161,7 @@ function Dashboard() {
                   </div>
 
                   <p className="text-sm text-gray-600 mb-4">
-                    Last modified: {formatDate(room.lastModified)}
+                    Last modified: {formatDate(room.updatedAt)}
                   </p>
 
                   <div className="flex gap-2">

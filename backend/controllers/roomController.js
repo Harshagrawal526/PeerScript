@@ -63,8 +63,8 @@ export const createRoom = async (req, res) => {
 // GET /api/rooms/my-rooms
 export const getMyRooms = async (req, res) => {
   const rooms = await Room.find({ creator: req.user.id })
-    .select("roomId name isPublic lastModified createdAt")
-    .sort({ lastModified: -1 });
+    .select("roomId name isPublic updatedAt createdAt")
+    .sort({ updatedAt: -1 });
 
   res.json({ success: true, rooms });
 };
@@ -99,7 +99,7 @@ export const getRoom = async (req, res) => {
       isPublic: room.isPublic,
       creator: room.creator,
       code: room.code,
-      lastModified: room.lastModified,
+      updatedAt: room.updatedAt,
       createdAt: room.createdAt,
     },
   });

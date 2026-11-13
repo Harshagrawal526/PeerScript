@@ -36,19 +36,10 @@ const RoomSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    lastModified: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     timestamps: true,
   },
 );
-
-RoomSchema.pre("save", function (next) {
-  this.lastModified = Date.now();
-  next();
-});
 
 export default mongoose.model("Room", RoomSchema);

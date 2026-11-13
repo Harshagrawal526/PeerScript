@@ -107,7 +107,7 @@ const persistRoom = async (roomId) => {
   try {
     await Room.findOneAndUpdate(
       { roomId },
-      { code, lastModified: Date.now() },
+      { code },
       { upsert: true, new: true },
     );
     room.dirty = false;
