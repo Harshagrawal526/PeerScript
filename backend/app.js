@@ -5,24 +5,16 @@ import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/auth.js";
 import roomRoutes from "./routes/rooms.js";
 import errorHandler from "./middleware/errorHandler.js";
+import { expressCorsOptions } from "./config/cors.js";
 
 const app = express();
 
-// Comma-separated list, e.g. "http://localhost:5173,https://peer-script.vercel.app"
-const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173")
-  .split(",")
-  .map((origin) => origin.trim());
 
 // Render terminates TLS at a proxy; required for rate limiting to see real client IPs
 app.set("trust proxy", 1);
 
 app.use(helmet());
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  }),
-);
+app.use(cors(expressCorsOptions));
 app.use(express.json());
 
 const apiLimiter = rateLimit({

@@ -1,7 +1,6 @@
+import "dotenv/config";
 import http from "node:http";
 import { Server } from "socket.io";
-import "dotenv/config";
-
 import app from "./app.js";
 import socketAuthMiddleware from "./middleware/socketAuth.js";
 import {
@@ -15,19 +14,11 @@ import {
   handleYjsAwareness,
 } from "./socket/handlers.js";
 import connectDB from "./db/index.js";
+import { socketCorsOptions } from "./config/cors.js";
 
 const server = http.createServer(app);
-const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173")
-  .split(",")
-  .map((origin) => origin.trim());
 
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
+const io = new Server(server, { cors: socketCorsOptions});
 
 io.use(socketAuthMiddleware);
 
