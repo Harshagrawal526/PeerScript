@@ -1,4 +1,4 @@
-import { API_URL } from "../config";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 const request = async (path, { method = "GET", token, body } = {}) => {
   const headers = {};
