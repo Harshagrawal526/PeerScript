@@ -28,18 +28,12 @@ const UserSchema = new mongoose.Schema(
       minlength: [6, "Password must be at least 6 characters"],
       select: false, // Don't return password by default
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     timestamps: true,
   },
 );
 
-// The early return matters: without it, any later save would hash the stored
-// hash again and lock the account out.
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
