@@ -1,5 +1,5 @@
 import Room from "../models/Room.js";
-import { generateRoomId } from "../utils/helpers.js";
+import { generateRoomId } from "../utils/roomId.js";
 
 // The schema allows a room with no creator, so ownership checks have to cope
 // with one; dereferencing it blindly turned a 403 into a 500. Handles the

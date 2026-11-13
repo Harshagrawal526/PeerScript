@@ -9,7 +9,6 @@ import { expressCorsOptions } from "./config/cors.js";
 
 const app = express();
 
-
 // Render terminates TLS at a proxy; required for rate limiting to see real client IPs
 app.set("trust proxy", 1);
 
@@ -24,7 +23,6 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Stricter limit on credential endpoints to slow brute-force attempts
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
