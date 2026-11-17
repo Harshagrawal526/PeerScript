@@ -1,6 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
-import { protect, optionalAuth } from "../middleware/auth.js";
+import { requireAuth, optionalAuth } from "../middleware/auth.js";
 import validateRequest from "../middleware/validateRequest.js";
 import {
   createRoom,
@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.post(
   "/",
-  protect,
+  requireAuth,
   [
     body("name")
       .optional()
@@ -26,13 +26,13 @@ router.post(
   createRoom,
 );
 
-router.get("/my-rooms", protect, getMyRooms);
+router.get("/my-rooms", requireAuth, getMyRooms);
 
 router.get("/:roomId", optionalAuth, getRoom);
 
 router.put(
   "/:roomId",
-  protect,
+  requireAuth,
   [
     body("name")
       .trim()
@@ -43,6 +43,6 @@ router.put(
   updateRoom,
 );
 
-router.delete("/:roomId", protect, deleteRoom);
+router.delete("/:roomId", requireAuth, deleteRoom);
 
 export default router;

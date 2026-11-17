@@ -1,6 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
-import { protect } from "../middleware/auth.js";
+import { requireAuth } from "../middleware/auth.js";
 import validateRequest from "../middleware/validateRequest.js";
 import { register, login, getMe } from "../controllers/authController.js";
 
@@ -38,6 +38,6 @@ router.post(
   login,
 );
 
-router.get("/me", protect, getMe);
+router.get("/me", requireAuth, getMe);
 
 export default router;

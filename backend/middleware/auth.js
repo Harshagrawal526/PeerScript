@@ -1,15 +1,8 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-export const protect = async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  }
+export const requireAuth = async (req, res, next) => {
+  let token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({
@@ -41,23 +34,30 @@ export const protect = async (req, res, next) => {
 
 // Attaches req.user when a valid token is present, but never rejects.
 export const optionalAuth = async (req, res, next) => {
-  let token;
+  let token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
+  if (!token) {
+    req.user = null;
+    return next();
   }
 
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id);
-    } catch (error) {
-      req.user = null;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = await User.findById(decoded.id);
+
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
     }
-  }
 
-  next();
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Not authorized to access this route",
+    });
+  }
 };

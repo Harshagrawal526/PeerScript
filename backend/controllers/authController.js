@@ -74,7 +74,7 @@ export const login = async (req, res) => {
 };
 
 // GET /api/auth/me
-// protect has already loaded the user, so there is nothing to fetch here.
+// requireAuth has already loaded the user, so there is nothing to fetch here.
 export const getMe = async (req, res) => {
   res.json({
     success: true,
