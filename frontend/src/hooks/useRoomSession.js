@@ -3,7 +3,7 @@ import { api } from "../utils/api";
 
 // Membership of a room: joining and leaving, its name, size, and whether the
 // server let us in at all.
-export const useRoomSession = (socket, roomId, token) => {
+export const useRoomSession = (socket, roomId) => {
   const [roomName, setRoomName] = useState("");
   const [usersCount, setUsersCount] = useState(1);
   const [accessDenied, setAccessDenied] = useState(false);
@@ -14,7 +14,7 @@ export const useRoomSession = (socket, roomId, token) => {
 
     const fetchRoomDetails = async () => {
       try {
-        const { ok, data } = await api.get(`/api/rooms/${roomId}`, token);
+        const { ok, data } = await api.get(`/api/rooms/${roomId}`);
         if (ok) setRoomName(data.room.name);
       } catch (error) {
         console.error("Fetch room error:", error);
@@ -22,7 +22,7 @@ export const useRoomSession = (socket, roomId, token) => {
     };
 
     fetchRoomDetails();
-  }, [roomId, token]);
+  }, [roomId]);
 
   useEffect(() => {
     if (!socket || !roomId) return;

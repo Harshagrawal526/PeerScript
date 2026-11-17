@@ -8,7 +8,7 @@ import { useRooms } from "../hooks/useRooms";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { user, token, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
@@ -18,7 +18,7 @@ function Dashboard() {
   const [renaming, setRenaming] = useState(false);
 
   const { rooms, loading, createRoom, deleteRoom, renameRoom } =
-    useRooms(token);
+    useRooms();
 
   useEffect(() => {
     if (!isAuthenticated) {

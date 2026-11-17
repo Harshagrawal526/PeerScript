@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import roomRoutes from "./routes/rooms.js";
 import errorHandler from "./middleware/errorHandler.js";
@@ -14,6 +15,7 @@ app.set("trust proxy", 1);
 
 app.use(helmet());
 app.use(cors(expressCorsOptions));
+app.use(cookieParser());
 app.use(express.json());
 
 const apiLimiter = rateLimit({

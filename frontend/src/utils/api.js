@@ -1,13 +1,13 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
-const request = async (path, { method = "GET", token, body } = {}) => {
+const request = async (path, { method = "GET", body } = {}) => {
   const headers = {};
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const response = await fetch(`${API_URL}${path}`, {
     method,
     headers,
+    credentials: "include",
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
@@ -22,8 +22,8 @@ const request = async (path, { method = "GET", token, body } = {}) => {
 };
 
 export const api = {
-  get: (path, token) => request(path, { token }),
-  post: (path, body, token) => request(path, { method: "POST", body, token }),
-  put: (path, body, token) => request(path, { method: "PUT", body, token }),
-  delete: (path, token) => request(path, { method: "DELETE", token }),
+  get: (path) => request(path),
+  post: (path, body) => request(path, { method: "POST", body }),
+  put: (path, body) => request(path, { method: "PUT", body }),
+  delete: (path) => request(path, { method: "DELETE" }),
 };

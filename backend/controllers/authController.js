@@ -7,6 +7,28 @@ const generateToken = (id) => {
   });
 };
 
+const setAuthCookie = (res, token) => {
+  const production = process.env.NODE_ENV === "production";
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: production,
+    sameSite: production ? "none" : "lax",
+    path: "/",
+    maxAge: Number(process.env.JWT_COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
+  });
+};
+
+export const logout = (_req, res) => {
+  const production = process.env.NODE_ENV === "production";
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: production,
+    sameSite: production ? "none" : "lax",
+    path: "/",
+  });
+  res.json({ success: true });
+};
+
 // POST /api/auth/register
 export const register = async (req, res) => {
   const { username, email, password } = req.body;
@@ -26,10 +48,10 @@ export const register = async (req, res) => {
   user = await User.create({ username, email, password });
 
   const token = generateToken(user._id);
+  setAuthCookie(res, token);
 
   res.status(201).json({
     success: true,
-    token,
     user: {
       id: user._id,
       username: user.username,
@@ -43,17 +65,9 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email }).select("+password");
+  const isMatch = await user?.comparePassword(password);
 
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid credentials",
-    });
-  }
-
-  const isMatch = await user.comparePassword(password);
-
-  if (!isMatch) {
+  if (!user || !isMatch) {
     return res.status(401).json({
       success: false,
       message: "Invalid credentials",
@@ -61,10 +75,10 @@ export const login = async (req, res) => {
   }
 
   const token = generateToken(user._id);
+  setAuthCookie(res, token);
 
   res.json({
     success: true,
-    token,
     user: {
       id: user._id,
       username: user.username,
@@ -74,10 +88,12 @@ export const login = async (req, res) => {
 };
 
 // GET /api/auth/me
-// requireAuth has already loaded the user, so there is nothing to fetch here.
+// requireAuth loads the user from the HttpOnly cookie. Return the token in
+// memory for the frontend's Socket.IO authentication; HTTP requests use the cookie.
 export const getMe = async (req, res) => {
   res.json({
     success: true,
+    token: req.cookies.token,
     user: {
       id: req.user._id,
       username: req.user.username,

@@ -15,7 +15,7 @@ import { useRoomSession } from "../hooks/useRoomSession";
 import Notice from "../components/ui/Notice";
 
 function EditorPage() {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomId = searchParams.get("room");
@@ -30,7 +30,6 @@ function EditorPage() {
   const { roomName, usersCount, accessDenied, unavailable } = useRoomSession(
     socket,
     roomId,
-    token,
   );
 
   // The editor pane is sized as a percentage of the split container.

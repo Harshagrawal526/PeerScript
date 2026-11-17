@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { api } from "../utils/api";
-import { sessionStore } from "../utils/storage";
 const AuthContext = createContext();
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -18,26 +17,19 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const storedToken = sessionStore.get("token");
-
-      if (storedToken) {
-        try {
-          const { ok, data } = await api.get("/api/auth/me", storedToken);
-
-          if (ok) {
-            setUser(data.user);
-            setToken(storedToken);
-          } else {
-            sessionStore.remove("token");
-            setUser(null);
-            setToken(null);
-          }
-        } catch (error) {
-          console.error("Auth check error:", error);
-          sessionStore.remove("token");
+      try {
+        const { ok, data } = await api.get("/api/auth/me");
+        if (ok) {
+          setUser(data.user);
+          setToken(data.token);
+        } else {
           setUser(null);
           setToken(null);
         }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setUser(null);
+        setToken(null);
       }
 
       setLoading(false);
@@ -56,9 +48,9 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (ok) {
+        const session = await api.get("/api/auth/me");
         setUser(data.user);
-        setToken(data.token);
-        sessionStore.set("token", data.token);
+        setToken(session.ok ? session.data.token : null);
         return { success: true };
       } else {
         return {
@@ -80,9 +72,9 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (ok) {
+        const session = await api.get("/api/auth/me");
         setUser(data.user);
-        setToken(data.token);
-        sessionStore.set("token", data.token);
+        setToken(session.ok ? session.data.token : null);
         return { success: true };
       } else {
         return {
@@ -96,10 +88,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    sessionStore.remove("token");
+  const logout = async () => {
+    try {
+      await api.post("/api/auth/logout", {});
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+      setToken(null);
+    }
   };
 
   return (

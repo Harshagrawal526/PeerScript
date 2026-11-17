@@ -13,14 +13,14 @@ import { api } from "../utils/api";
 
 function Home() {
   const navigate = useNavigate();
-  const { isAuthenticated, token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [roomId, setRoomId] = useState("");
   const [showQuickCreateModal, setShowQuickCreateModal] = useState(false);
   const [quickRoomName, setQuickRoomName] = useState("");
   const [creatingQuick, setCreatingQuick] = useState(false);
 
   const quickCreateRoom = async () => {
-    if (isAuthenticated && token) {
+    if (isAuthenticated) {
       setShowQuickCreateModal(true);
     } else {
       const newRoomId = generateRoomId();
@@ -36,7 +36,6 @@ function Home() {
       const { ok, data } = await api.post(
         "/api/rooms",
         { name: quickRoomName || "" },
-        token,
       );
 
       if (ok) {

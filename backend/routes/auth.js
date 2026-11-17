@@ -2,7 +2,7 @@ import express from "express";
 import { body } from "express-validator";
 import { requireAuth } from "../middleware/auth.js";
 import validateRequest from "../middleware/validateRequest.js";
-import { register, login, getMe } from "../controllers/authController.js";
+import { register, login, getMe, logout } from "../controllers/authController.js";
 
 const router = express.Router();
 
@@ -39,5 +39,6 @@ router.post(
 );
 
 router.get("/me", requireAuth, getMe);
+router.post("/logout", logout);
 
 export default router;
