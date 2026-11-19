@@ -7,25 +7,16 @@ const generateToken = (id) => {
   });
 };
 
-const setAuthCookie = (res, token) => {
-  const production = process.env.NODE_ENV === "production";
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: production,
-    sameSite: production ? "none" : "lax",
-    path: "/",
-    maxAge: Number(process.env.JWT_COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
-  });
+const production = process.env.NODE_ENV === "production";
+const options = {
+  httpOnly: true,
+  secure: production,
+  sameSite: production ? "none" : "strict",
+  maxAge: Number(process.env.JWT_COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
 };
 
 export const logout = (_req, res) => {
-  const production = process.env.NODE_ENV === "production";
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: production,
-    sameSite: production ? "none" : "lax",
-    path: "/",
-  });
+  res.clearCookie("token", options);
   res.json({ success: true });
 };
 
@@ -48,7 +39,7 @@ export const register = async (req, res) => {
   user = await User.create({ username, email, password });
 
   const token = generateToken(user._id);
-  setAuthCookie(res, token);
+  res.cookie("token", token, options);
 
   res.status(201).json({
     success: true,
@@ -75,7 +66,7 @@ export const login = async (req, res) => {
   }
 
   const token = generateToken(user._id);
-  setAuthCookie(res, token);
+  res.cookie("token", token, options);
 
   res.json({
     success: true,
