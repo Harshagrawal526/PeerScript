@@ -33,10 +33,9 @@ function Home() {
     setCreatingQuick(true);
 
     try {
-      const { ok, data } = await api.post(
-        "/api/rooms",
-        { name: quickRoomName || "" },
-      );
+      const { ok, data } = await api.post("/api/rooms", {
+        name: quickRoomName || "",
+      });
 
       if (ok) {
         navigate(`/app?room=${data.room.roomId}`);

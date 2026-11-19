@@ -75,15 +75,15 @@ Visit `http://localhost:5173`
 
 **Backend** — create `backend/.env` (see `backend/.env.example`):
 
-| Variable       | Description                                                        |
-| -------------- | ------------------------------------------------------------------ |
-| `PORT`         | Server port (default: `3001`)                                      |
-| `MONGODB_URI`  | MongoDB connection string                                          |
-| `JWT_SECRET`   | Secret key for signing JWTs                                        |
-| `JWT_EXPIRE`   | Token lifetime, e.g. `7d`                                          |
-| `JWT_COOKIE_MAX_AGE` | Cookie lifetime in milliseconds (default: `604800000`, or 7 days) |
-| `NODE_ENV` | Set to `production` when deploying so the auth cookie uses secure production settings |
-| `CORS_ORIGINS` | Comma-separated allowed origins (default: `http://localhost:5173`) |
+| Variable             | Description                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------- |
+| `PORT`               | Server port (default: `3001`)                                                         |
+| `MONGODB_URI`        | MongoDB connection string                                                             |
+| `JWT_SECRET`         | Secret key for signing JWTs                                                           |
+| `JWT_EXPIRE`         | Token lifetime, e.g. `7d`                                                             |
+| `JWT_COOKIE_MAX_AGE` | Cookie lifetime in milliseconds (default: `604800000`, or 7 days)                     |
+| `NODE_ENV`           | Set to `production` when deploying so the auth cookie uses secure production settings |
+| `CORS_ORIGINS`       | Comma-separated allowed origins (default: `http://localhost:5173`)                    |
 
 **Frontend** — create `frontend/.env`:
 

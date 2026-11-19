@@ -17,8 +17,7 @@ function Dashboard() {
   const [renamingRoom, setRenamingRoom] = useState(null);
   const [renaming, setRenaming] = useState(false);
 
-  const { rooms, loading, createRoom, deleteRoom, renameRoom } =
-    useRooms();
+  const { rooms, loading, createRoom, deleteRoom, renameRoom } = useRooms();
 
   useEffect(() => {
     if (!isAuthenticated) {

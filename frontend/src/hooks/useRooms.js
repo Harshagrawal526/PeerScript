@@ -29,48 +29,33 @@ export const useRooms = () => {
     };
   }, []);
 
-  const createRoom = useCallback(
-    async (name) => {
-      const { ok, data } = await api.post(
-        "/api/rooms",
-        { name: name || "Untitled Project" },
-      );
-      return ok ? data.room : null;
-    },
-    [],
-  );
+  const createRoom = useCallback(async (name) => {
+    const { ok, data } = await api.post("/api/rooms", {
+      name: name || "Untitled Project",
+    });
+    return ok ? data.room : null;
+  }, []);
 
   // Functional form: two writes resolving close together would otherwise both
   // start from the list as it was, and the slower one would undo the other.
-  const deleteRoom = useCallback(
-    async (roomId) => {
-      const { ok } = await api.delete(`/api/rooms/${roomId}`);
-      if (ok)
-        setRooms((previous) =>
-          previous.filter((room) => room.roomId !== roomId),
-        );
-      return ok;
-    },
-    [],
-  );
+  const deleteRoom = useCallback(async (roomId) => {
+    const { ok } = await api.delete(`/api/rooms/${roomId}`);
+    if (ok)
+      setRooms((previous) => previous.filter((room) => room.roomId !== roomId));
+    return ok;
+  }, []);
 
-  const renameRoom = useCallback(
-    async (roomId, name) => {
-      const { ok, data } = await api.put(
-        `/api/rooms/${roomId}`,
-        { name },
+  const renameRoom = useCallback(async (roomId, name) => {
+    const { ok, data } = await api.put(`/api/rooms/${roomId}`, { name });
+    if (ok) {
+      setRooms((previous) =>
+        previous.map((room) =>
+          room.roomId === roomId ? { ...room, name: data.room.name } : room,
+        ),
       );
-      if (ok) {
-        setRooms((previous) =>
-          previous.map((room) =>
-            room.roomId === roomId ? { ...room, name: data.room.name } : room,
-          ),
-        );
-      }
-      return ok;
-    },
-    [],
-  );
+    }
+    return ok;
+  }, []);
 
   return { rooms, loading, createRoom, deleteRoom, renameRoom };
 };
