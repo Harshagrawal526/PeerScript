@@ -1,7 +1,10 @@
 import express from "express";
-import { body } from "express-validator";
 import { requireAuth, optionalAuth } from "../middleware/auth.js";
 import validateRequest from "../middleware/validateRequest.js";
+import {
+  createRoomValidator,
+  updateRoomValidator,
+} from "../validators/index.js";
 import {
   createRoom,
   getMyRooms,
@@ -12,19 +15,7 @@ import {
 
 const router = express.Router();
 
-router.post(
-  "/",
-  requireAuth,
-  [
-    body("name")
-      .optional()
-      .trim()
-      .isLength({ max: 50 })
-      .withMessage("Room name must be less than 50 characters"),
-  ],
-  validateRequest,
-  createRoom,
-);
+router.post("/", requireAuth, createRoomValidator, validateRequest, createRoom);
 
 router.get("/my-rooms", requireAuth, getMyRooms);
 
@@ -33,12 +24,7 @@ router.get("/:roomId", optionalAuth, getRoom);
 router.put(
   "/:roomId",
   requireAuth,
-  [
-    body("name")
-      .trim()
-      .isLength({ min: 1, max: 50 })
-      .withMessage("Room name must be 1-50 characters"),
-  ],
+  updateRoomValidator,
   validateRequest,
   updateRoom,
 );
