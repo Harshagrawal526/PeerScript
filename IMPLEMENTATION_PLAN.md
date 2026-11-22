@@ -12,19 +12,19 @@
 
 ## Phase 1 — Routes & Navigation
 
-- [ ] Add a `/scratchpad` route (public, no auth required).
-- [ ] Add Scratchpad entry point in nav/home, visually separate from room creation.
-- [ ] Use an explicit route for Scratchpad — don't infer it from a missing room ID.
-- [ ] Handle bad/missing room IDs gracefully with a redirect.
+- [x] Add a `/scratchpad` route (public, no auth required).
+- [x] Add Scratchpad entry point in nav/home, visually separate from room creation.
+- [x] Use an explicit route for Scratchpad — don't infer it from a missing room ID.
+- [x] Handle bad/missing room IDs gracefully with a redirect.
 
 ---
 
 ## Phase 2 — Local Scratchpad
 
-- [ ] Wire up the existing editor (no collaboration lifecycle) on the Scratchpad route.
-- [ ] Persist all three code fields to `localStorage`; restore on page load.
-- [ ] Add a clear/reset button with confirmation.
-- [ ] No Yjs/socket events, no backend calls, no dashboard entries.
+- [x] Wire up the existing editor (no collaboration lifecycle) on the Scratchpad route.
+- [x] Persist all three code fields to `localStorage`; restore on page load.
+- [x] Add a clear/reset button with confirmation.
+- [x] No Yjs/socket events, no backend calls, no dashboard entries.
 
 ---
 
