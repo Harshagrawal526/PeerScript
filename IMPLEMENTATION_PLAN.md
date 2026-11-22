@@ -30,11 +30,11 @@
 
 ## Phase 3 — Auth-Gate Shared Rooms
 
-- [ ] Block unauthenticated users from creating or joining rooms (UI + HTTP + Socket.IO).
-- [ ] On anonymous room-link access, redirect to login and return to the room after.
-- [ ] Reject unauthenticated socket connections; recheck auth before accepting Yjs writes.
-- [ ] Any logged-in user can join a public room.
-- [ ] Remove any leftover anonymous room paths.
+- [x] Block unauthenticated users from creating or joining rooms (UI + HTTP + Socket.IO).
+- [x] On anonymous room-link access, redirect to login and return to the room after.
+- [x] Reject unauthenticated socket connections; recheck auth before accepting Yjs writes.
+- [x] Any logged-in user can join a public room.
+- [x] Remove any leftover anonymous room paths.
 
 ---
 

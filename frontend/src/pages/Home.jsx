@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Button from "../components/ui/Button";
-import { generateRoomId, extractRoomIdFromInput } from "../utils/roomUtils";
+import { extractRoomIdFromInput } from "../utils/roomUtils";
 import htmlImg from "../assets/html.png";
 import cssImg from "../assets/css.png";
 import jsImg from "../assets/js.png";
@@ -23,8 +23,7 @@ function Home() {
     if (isAuthenticated) {
       setShowQuickCreateModal(true);
     } else {
-      const newRoomId = generateRoomId();
-      navigate(`/app?room=${newRoomId}`);
+      navigate("/login");
     }
   };
 
@@ -51,6 +50,10 @@ function Home() {
   const joinRoom = () => {
     if (roomId.trim()) {
       const extractedRoomId = extractRoomIdFromInput(roomId.trim());
+      if (!isAuthenticated) {
+        navigate(`/login?next=/app?room=${extractedRoomId}`);
+        return;
+      }
       navigate(`/app?room=${extractedRoomId}`);
     }
   };
@@ -160,7 +163,7 @@ function Home() {
                     ✨ Create New Room
                   </Button>
                   <p className="text-sm text-gray-600 text-center mt-2">
-                    Start a quick anonymous session
+                    Sign in to start collaborating
                   </p>
                 </div>
               </>

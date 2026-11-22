@@ -126,12 +126,13 @@ const schedulePersist = (roomId) => {
   }, SAVE_DEBOUNCE_MS);
 };
 
-// Private rooms are only accessible to their creator; rooms not in the DB
-// (anonymous quick-rooms) are treated as public. Fails closed on DB errors.
+// Private rooms are only accessible to their creator; public rooms are open to
+// any authenticated user. Rooms not in the DB are denied. Fails closed on DB errors.
 const canAccessRoom = async (roomId, socket) => {
   try {
     const dbRoom = await Room.findOne({ roomId }).select("isPublic creator");
-    if (!dbRoom || dbRoom.isPublic) return true;
+    if (!dbRoom) return false;
+    if (dbRoom.isPublic) return true;
     return !!(
       socket.user &&
       dbRoom.creator &&

@@ -19,6 +19,12 @@ function EditorPage() {
   const navigate = useNavigate();
   const roomId = searchParams.get("room");
 
+  // Redirect anonymous users to login, preserving the intended room URL
+  if (!user) {
+    const next = roomId ? `/app?room=${roomId}` : "/";
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+  }
+
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatWidth, setChatWidth] = useState(320);
 
