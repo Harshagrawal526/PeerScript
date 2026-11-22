@@ -230,7 +230,7 @@ function Home() {
             {
               icon: "🔗",
               title: "Easy Sharing",
-              description: "Share a link - no installation or signup required",
+              description: "Share a link - sign in and invite collaborators",
               bgColor: "bg-green-50",
               borderColor: "border-green-200",
               titleColor: "text-green-900",

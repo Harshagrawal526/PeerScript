@@ -1,5 +1,4 @@
-// Generate a unique, unguessable room ID (used for anonymous rooms;
-// authenticated rooms get their ID from the server)
+// Generate a unique room ID for use when joining via a manually-entered ID
 export const generateRoomId = () => crypto.randomUUID();
 
 export const extractRoomIdFromInput = (input) => {

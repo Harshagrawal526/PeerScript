@@ -49,5 +49,5 @@
 
 ## Phase 5 — Cleanup
 
-- [ ] Update README and any docs that mention anonymous collaboration.
-- [ ] Remove stale UI copy about anonymous quick rooms.
+- [x] Update README and any docs that mention anonymous collaboration.
+- [x] Remove stale UI copy about anonymous quick rooms.
