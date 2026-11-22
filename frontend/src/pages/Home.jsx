@@ -83,6 +83,22 @@ function Home() {
           </div>
         </section>
 
+        {/* Scratchpad CTA */}
+        <section className="mb-6 max-w-lg w-full">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl px-6 py-4 flex items-center justify-between shadow-sm">
+            <div>
+              <p className="font-semibold text-green-900">🧪 Just want to experiment?</p>
+              <p className="text-sm text-green-700">Use Scratchpad — no account needed, saved locally in your browser.</p>
+            </div>
+            <a
+              href="/scratchpad"
+              className="ml-4 shrink-0 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            >
+              Open Scratchpad
+            </a>
+          </div>
+        </section>
+
         {/* Room Actions */}
         <section className="bg-gradient-to-br from-white via-blue-50 to-purple-50 backdrop-blur-sm rounded-2xl shadow-2xl border border-blue-200 p-8 md:p-12 max-w-lg w-full mb-16 transform hover:scale-105 transition-all duration-300">
           <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">
