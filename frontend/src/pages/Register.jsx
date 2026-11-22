@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
 function Register() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { register } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -43,7 +44,8 @@ function Register() {
     );
 
     if (result.success) {
-      navigate("/");
+      const next = searchParams.get("next");
+      navigate(next || "/");
     } else {
       setError(result.message);
     }
@@ -151,7 +153,7 @@ function Register() {
             <p className="text-gray-600">
               Already have an account?{" "}
               <Link
-                to="/login"
+                to={searchParams.get("next") ? `/login?next=${encodeURIComponent(searchParams.get("next"))}` : "/login"}
                 className="text-blue-600 hover:text-blue-700 font-semibold"
               >
                 Login

@@ -31,13 +31,33 @@ const nextUntitledName = async (creatorId) => {
   return `Untitled Project ${maxNumber + 1}`;
 };
 
+const MAX_CODE_BYTES = 512 * 1024; // 512 KB
+
 // POST /api/rooms
 export const createRoom = async (req, res) => {
   const roomId = generateRoomId();
-  let { name, isPublic = true } = req.body;
+  let { name, isPublic = true, code } = req.body;
 
   if (!name || name.trim() === "" || name === "Untitled Project") {
     name = await nextUntitledName(req.user.id);
+  }
+
+  // Validate code payload size if provided
+  const safeCode = { html: "", css: "", js: "" };
+  if (code && typeof code === "object") {
+    const totalBytes = Buffer.byteLength(
+      (code.html || "") + (code.css || "") + (code.js || ""),
+      "utf8",
+    );
+    if (totalBytes > MAX_CODE_BYTES) {
+      return res.status(413).json({
+        success: false,
+        message: "Code payload exceeds the 512 KB limit",
+      });
+    }
+    safeCode.html = typeof code.html === "string" ? code.html : "";
+    safeCode.css = typeof code.css === "string" ? code.css : "";
+    safeCode.js = typeof code.js === "string" ? code.js : "";
   }
 
   const room = await Room.create({
@@ -45,7 +65,7 @@ export const createRoom = async (req, res) => {
     name,
     creator: req.user.id,
     isPublic,
-    code: { html: "", css: "", js: "" },
+    code: safeCode,
   });
 
   res.status(201).json({

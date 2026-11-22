@@ -22,7 +22,8 @@ peerscript/
 
 ## Features
 
-- Conflict-free real-time collaborative editing (Yjs CRDT over Socket.io)
+- **Scratchpad** — local-only HTML/CSS/JS editor for everyone (no account needed), persisted in browser `localStorage`
+- Conflict-free real-time collaborative editing (Yjs CRDT over Socket.io) — requires sign-in
 - Live cursors and selections of other users in the editor
 - Live HTML/CSS/JS preview
 - Console panel capturing console output and uncaught errors from the preview
@@ -30,12 +31,17 @@ peerscript/
 - User authentication with an HttpOnly cookie for HTTP requests and JWT authentication for Socket.io
 - Auto-save to MongoDB
 - Code formatting & export
+- Save Scratchpad code to a new owned room with one click
 
 ## How It Works
 
+### Scratchpad
+
+A local-only HTML/CSS/JS editor available to all visitors without an account. Code is saved to browser `localStorage` and restored on page load. No server calls, no room, no collaboration traffic. Signed-in users can snapshot their Scratchpad into a new owned room with **Save to new room**.
+
 ### Collaborative editing
 
-Each project has a room with a unique ID. Its HTML, CSS, and JavaScript are shared Yjs documents, which merge simultaneous edits from multiple users. Socket.io sends document updates and cursor presence between room members. The server keeps active documents in memory and saves them to MongoDB so they can be restored when someone rejoins.
+Each project has a room with a unique ID. Shared rooms require a signed-in account to create or join. Each room's HTML, CSS, and JavaScript are shared Yjs documents, which merge simultaneous edits from multiple users. Socket.io sends document updates and cursor presence between room members. The server keeps active documents in memory and saves them to MongoDB so they can be restored when someone rejoins.
 
 ### Authentication
 

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
 function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -31,7 +32,8 @@ function Login() {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate("/");
+      const next = searchParams.get("next");
+      navigate(next || "/");
     } else {
       setError(result.message);
     }
@@ -103,7 +105,7 @@ function Login() {
             <p className="text-gray-600">
               Don&apos;t have an account?{" "}
               <Link
-                to="/register"
+                to={searchParams.get("next") ? `/register?next=${encodeURIComponent(searchParams.get("next"))}` : "/register"}
                 className="text-blue-600 hover:text-blue-700 font-semibold"
               >
                 Sign up

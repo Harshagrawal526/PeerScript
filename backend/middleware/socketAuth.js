@@ -6,8 +6,7 @@ const socketAuthMiddleware = async (socket, next) => {
     const token = socket.handshake.auth.token;
 
     if (!token) {
-      socket.user = null;
-      return next();
+      return next(new Error("Authentication required"));
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -15,8 +14,7 @@ const socketAuthMiddleware = async (socket, next) => {
     const user = await User.findById(decoded.id).select("username email");
 
     if (!user) {
-      socket.user = null;
-      return next();
+      return next(new Error("Authentication required"));
     }
 
     socket.user = {
@@ -27,10 +25,7 @@ const socketAuthMiddleware = async (socket, next) => {
 
     next();
   } catch (error) {
-    console.error("Socket auth error:", error.message);
-    // A bad token means anonymous, not rejected: rooms may be public.
-    socket.user = null;
-    next();
+    return next(new Error("Authentication required"));
   }
 };
 

@@ -1,6 +1,5 @@
 import React, { useCallback, useState, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useSearchParams, useNavigate, Navigate, Link } from "react-router-dom";
 import Editor from "../components/editor/Editor";
 import RoomHeader from "../components/room/RoomHeader";
 import Chat from "../components/room/Chat";
@@ -19,6 +18,12 @@ function EditorPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomId = searchParams.get("room");
+
+  // Redirect anonymous users to login, preserving the intended room URL
+  if (!user) {
+    const next = roomId ? `/app?room=${roomId}` : "/";
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+  }
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatWidth, setChatWidth] = useState(320);
@@ -128,20 +133,7 @@ function EditorPage() {
   }
 
   if (!roomId) {
-    return (
-      <Notice
-        title="No Room Selected"
-        titleClassName="text-orange-600"
-        message="Please create or join a room from the home page"
-      >
-        <Link
-          to="/"
-          className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600"
-        >
-          Go to Home
-        </Link>
-      </Notice>
-    );
+    return <Navigate to="/" replace />;
   }
 
   const outputHeight = 100 - editorHeight;

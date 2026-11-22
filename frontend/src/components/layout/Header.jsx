@@ -42,6 +42,12 @@ const Header = ({ transparent = false }) => {
             Home
           </Link>
           <Link
+            to="/scratchpad"
+            className="text-white hover:text-blue-100 transition-colors font-medium"
+          >
+            Scratchpad
+          </Link>
+          <Link
             to="/about"
             className="text-white hover:text-blue-100 transition-colors font-medium"
           >

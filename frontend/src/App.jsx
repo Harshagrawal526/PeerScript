@@ -6,6 +6,7 @@ import { useAuth } from "./context/AuthContext";
 // only downloaded when a room is actually opened
 const Home = lazy(() => import("./pages/Home"));
 const EditorPage = lazy(() => import("./pages/EditorPage"));
+const ScratchpadPage = lazy(() => import("./pages/ScratchpadPage"));
 const About = lazy(() => import("./pages/About"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
@@ -26,6 +27,7 @@ const page = (element) => <Suspense fallback={<Loader />}>{element}</Suspense>;
 const router = createBrowserRouter([
   { path: "/", element: page(<Home />) },
   { path: "/app", element: page(<EditorPage />) },
+  { path: "/scratchpad", element: page(<ScratchpadPage />) },
   { path: "/about", element: page(<About />) },
   { path: "/login", element: page(<Login />) },
   { path: "/register", element: page(<Register />) },

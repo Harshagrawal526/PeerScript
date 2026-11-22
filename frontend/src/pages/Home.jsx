@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Button from "../components/ui/Button";
-import { generateRoomId, extractRoomIdFromInput } from "../utils/roomUtils";
+import { extractRoomIdFromInput } from "../utils/roomUtils";
 import htmlImg from "../assets/html.png";
 import cssImg from "../assets/css.png";
 import jsImg from "../assets/js.png";
@@ -23,8 +23,7 @@ function Home() {
     if (isAuthenticated) {
       setShowQuickCreateModal(true);
     } else {
-      const newRoomId = generateRoomId();
-      navigate(`/app?room=${newRoomId}`);
+      navigate("/login");
     }
   };
 
@@ -51,6 +50,10 @@ function Home() {
   const joinRoom = () => {
     if (roomId.trim()) {
       const extractedRoomId = extractRoomIdFromInput(roomId.trim());
+      if (!isAuthenticated) {
+        navigate(`/login?next=/app?room=${extractedRoomId}`);
+        return;
+      }
       navigate(`/app?room=${extractedRoomId}`);
     }
   };
@@ -80,6 +83,22 @@ function Home() {
             <span className="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-300 shadow-sm">
               🔗 Easy Sharing
             </span>
+          </div>
+        </section>
+
+        {/* Scratchpad CTA */}
+        <section className="mb-6 max-w-lg w-full">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl px-6 py-4 flex items-center justify-between shadow-sm">
+            <div>
+              <p className="font-semibold text-green-900">🧪 Just want to experiment?</p>
+              <p className="text-sm text-green-700">Use Scratchpad — no account needed, saved locally in your browser.</p>
+            </div>
+            <a
+              href="/scratchpad"
+              className="ml-4 shrink-0 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            >
+              Open Scratchpad
+            </a>
           </div>
         </section>
 
@@ -144,7 +163,7 @@ function Home() {
                     ✨ Create New Room
                   </Button>
                   <p className="text-sm text-gray-600 text-center mt-2">
-                    Start a quick anonymous session
+                    Sign in to start collaborating
                   </p>
                 </div>
               </>
@@ -211,7 +230,7 @@ function Home() {
             {
               icon: "🔗",
               title: "Easy Sharing",
-              description: "Share a link - no installation or signup required",
+              description: "Share a link - sign in and invite collaborators",
               bgColor: "bg-green-50",
               borderColor: "border-green-200",
               titleColor: "text-green-900",
