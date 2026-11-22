@@ -40,10 +40,10 @@
 
 ## Phase 4 — Save Scratchpad to Room
 
-- [ ] Add a **Save to new room** button (signed-in users only; anon users get a login prompt).
-- [ ] Backend endpoint: create room with current HTML/CSS/JS, return room ID. Reject payloads over **512KB** total.
-- [ ] On success, open the new room. Scratchpad `localStorage` stays unchanged.
-- [ ] New room shows up in dashboard with normal owner controls.
+- [x] Add a **Save to new room** button (signed-in users only; anon users get a login prompt).
+- [x] Backend endpoint: create room with current HTML/CSS/JS, return room ID. Reject payloads over **512KB** total.
+- [x] On success, open the new room. Scratchpad `localStorage` stays unchanged.
+- [x] New room shows up in dashboard with normal owner controls.
 
 ---
 

@@ -1,5 +1,5 @@
-import React, { useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useScratchpad } from "../hooks/useScratchpad";
 import { useLivePreview } from "../hooks/useLivePreview";
@@ -8,11 +8,14 @@ import { useDragResize } from "../hooks/useDragResize";
 import Editor from "../components/editor/Editor";
 import OutputPanel from "../components/preview/OutputPanel";
 import Header from "../components/layout/Header";
+import { api } from "../utils/api";
 
 function ScratchpadPage() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const iframeRef = useRef(null);
   const containerRef = useRef(null);
+  const [saving, setSaving] = useState(false);
 
   const collab = useScratchpad();
   const { logs, clearLogs } = usePreviewConsole(iframeRef);
@@ -31,6 +34,30 @@ function ScratchpadPage() {
     measure: measureEditorHeight,
     bodyClass: "resizing",
   });
+
+  const saveToRoom = async () => {
+    if (!collab || saving) return;
+    setSaving(true);
+    try {
+      const { ok, data } = await api.post("/api/rooms", {
+        code: {
+          html: collab.ytexts.html.toString(),
+          css: collab.ytexts.css.toString(),
+          js: collab.ytexts.js.toString(),
+        },
+      });
+      if (ok) {
+        navigate(`/app?room=${data.room.roomId}`);
+        // localStorage is intentionally left untouched
+      } else {
+        alert(data?.message || "Failed to save room. Please try again.");
+      }
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const clearCode = () => {
     if (!collab) return;
@@ -60,10 +87,11 @@ function ScratchpadPage() {
           {isAuthenticated ? (
             <button
               type="button"
-              onClick={() => alert("Save to room — coming soon!")}
-              className="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer"
+              onClick={saveToRoom}
+              disabled={saving}
+              className="text-xs bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer"
             >
-              💾 Save to new room
+              {saving ? "Saving..." : "💾 Save to new room"}
             </button>
           ) : (
             <Link
